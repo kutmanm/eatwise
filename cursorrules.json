@@ -1,0 +1,135 @@
+{
+  "version": "2.0.0",
+  "general": {
+    "codeOnly": true,
+    "noExplanations": true,
+    "noComments": true,
+    "noTestsUnlessRequested": true,
+    "productionReady": true,
+    "minimalAbstractions": true,
+    "asyncFunctions": true,
+    "typeSafe": true,
+    "cleanErrorHandling": true
+  },
+  "backend": {
+    "framework": "FastAPI",
+    "database": "PostgreSQL",
+    "auth": "Supabase Auth",
+    "storage": "Supabase Storage",
+    "aiIntegrations": [
+      {
+        "textParsing": "OpenAI GPT-4o",
+        "visionAnalysis": "OpenAI GPT-4o"
+      }
+    ],
+    "hosting": "Render",
+    "folderStructure": {
+      "root": "backend",
+      "directories": [
+        "api/meals",
+        "api/auth",
+        "api/users",
+        "services",
+        "models",
+        "schemas",
+        "utils",
+        "main.py"
+      ]
+    },
+    "rules": {
+      "pydanticValidation": true,
+      "sqlAlchemyVersion": "2.0",
+      "sqlAlchemyStyle": "ORM declarative with type hints",
+      "separateLogic": {
+        "routes": "call services only",
+        "services": "business logic, AI interactions, file uploads",
+        "crud": "database access",
+        "utils": "helper functions"
+      },
+      "dependencies": "use FastAPI Depends for auth, settings, and database sessions",
+      "noLogsOrPrints": true,
+      "aiInteraction": "handled in services",
+      "fileUploads": "handled in services"
+    }
+  },
+  "frontend": {
+    "framework": "Next.js",
+    "router": "App Router",
+    "language": "TypeScript",
+    "styling": "TailwindCSS",
+    "stateManagement": ["Context API", "Zustand"],
+    "formHandling": ["React Hook Form", "Zod"],
+    "imageUpload": "Supabase Storage",
+    "hosting": "Render",
+    "folderStructure": {
+      "root": "frontend",
+      "directories": [
+        "app/(routes)/auth",
+        "app/(routes)/dashboard",
+        "app/(routes)/history",
+        "app/(routes)/premium",
+        "components",
+        "lib",
+        "hooks",
+        "types",
+        "styles",
+        "public"
+      ],
+      "files": [
+        "app/layout.tsx",
+        "app/page.tsx",
+        "tailwind.config.ts",
+        "postcss.config.js",
+        "tsconfig.json"
+      ]
+    },
+    "rules": {
+      "pages": "display only",
+      "logicLocation": ["lib", "hooks", "backend"],
+      "centralizedServices": "lib/api for API calls",
+      "hooksForData": "useSWR in hooks for data fetching",
+      "minimalState": true,
+      "styling": {
+        "use": "TailwindCSS",
+        "noInlineStyles": true,
+        "noCssModules": true,
+        "theme": {
+          "style": "friendly, clean, modern",
+          "ui": "rounded",
+          "mode": "light",
+          "colors": ["green", "blue", "beige", "white"],
+          "mobileFirst": true
+        }
+      },
+      "serverComponentsDefault": true,
+      "clientComponents": {
+        "directive": "use client",
+        "location": "components"
+      },
+      "components": {
+        "location": "components",
+        "reusable": true,
+        "pure": true,
+        "propsOnly": true
+      },
+      "types": {
+        "location": "types",
+        "strict": true,
+        "noAny": true
+      },
+      "hooks": {
+        "location": "hooks",
+        "dependencies": ["useSWR", "lib/api"]
+      },
+      "visualizations": {
+        "charts": ["Recharts"],
+        "types": ["bar", "pie"]
+      }
+    }
+  },
+  "aiPrompts": {
+    "mealToMacros": "Given a meal description, estimate the calories, protein, fat, and carbohydrates in grams using GPT-4o.",
+    "photoToMacros": "Analyze an image and return approximate serving sizes and calories for the food items shown using GPT-4o.",
+    "coaching": "Based on daily intake and user goals, suggest 1–2 small improvements for tomorrow using GPT-4o."
+  }
+}
