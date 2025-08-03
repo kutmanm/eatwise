@@ -18,7 +18,7 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
   const { suggestions, getSuggestions, loading: suggestionsLoading } = useMealSuggestions();
   const { subscription } = useSubscription();
   
-  const isPremium = subscription?.plan === 'premium' && subscription?.active;
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
 
   useEffect(() => {
     if (meal?.id) {

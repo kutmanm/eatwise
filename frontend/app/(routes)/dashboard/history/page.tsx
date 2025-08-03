@@ -11,13 +11,13 @@ import { MealCard } from '@/components/meal/MealCard';
 import { MealDetailModal } from '@/components/meal/MealDetailModal';
 import { MealFiltersComponent, type MealFilters } from '@/components/meal/MealFilters';
 import { NutritionEditor } from '@/components/meal/NutritionEditor';
-import { useUserMeals } from '@/hooks/useMeals';
+import { useMeals } from '@/hooks/useMeals';
 import { mealsApi } from '@/lib/api';
 import type { Meal, MealFormData } from '@/types';
 
 function MealHistoryContent() {
   const router = useRouter();
-  const { meals, loading, mutate } = useUserMeals();
+  const { meals, loading, mutate } = useMeals();
   
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -39,7 +39,7 @@ function MealHistoryContent() {
   const filteredMeals = useMemo(() => {
     if (!meals) return [];
 
-    let filtered = meals.filter((meal) => {
+    let filtered = meals.filter((meal: Meal) => {
       // Search filter
       if (filters.search && !meal.description?.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
@@ -66,7 +66,7 @@ function MealHistoryContent() {
     });
 
     // Sort meals
-    filtered.sort((a, b) => {
+    filtered.sort((a: Meal, b: Meal) => {
       switch (filters.sortBy) {
         case 'date_asc':
           return new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime();
@@ -101,7 +101,7 @@ function MealHistoryContent() {
     }
 
     try {
-      const response = await mealsApi.deleteMeal(mealId);
+      const response = await mealsApi.deleteMeal(Number(mealId));
       if (response.error) {
         setError(response.error);
       } else {
@@ -145,7 +145,7 @@ function MealHistoryContent() {
     });
   };
 
-  const totalCalories = filteredMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const totalCalories = filteredMeals.reduce((sum: number, meal: Meal) => sum + (meal.calories || 0), 0);
   const totalMeals = filteredMeals.length;
 
   return (
@@ -245,7 +245,7 @@ function MealHistoryContent() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMeals.map((meal) => (
+              {filteredMeals.map((meal: Meal) => (
                 <MealCard
                   key={meal.id}
                   meal={meal}

@@ -22,7 +22,7 @@ export function GoalProgressChart({
   title = "Goal Achievement" 
 }: GoalProgressChartProps) {
   const chartData = data.map(item => ({
-    date: formatDate(item.date, 'MMM dd'),
+    date: formatDate(item.date || new Date().toISOString(), 'MMM dd'),
     calorieProgress: calculatePercentage(item.calories || 0, goals.calories),
     proteinProgress: calculatePercentage(item.protein || 0, goals.protein),
     carbsProgress: calculatePercentage(item.carbs || 0, goals.carbs),

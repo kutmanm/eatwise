@@ -12,7 +12,7 @@ interface WeeklyProgressChartProps {
 
 export function WeeklyProgressChart({ data, title = "Weekly Progress" }: WeeklyProgressChartProps) {
   const chartData = data.map(item => ({
-    date: formatDate(item.date, 'EEE'),
+    date: formatDate(item.date || new Date().toISOString(), 'EEE'),
     protein: item.protein || 0,
     carbs: item.carbs || 0,
     fat: item.fat || 0,

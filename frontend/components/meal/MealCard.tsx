@@ -83,7 +83,7 @@ export function MealCard({ meal, onEdit, onDelete, onViewDetails }: MealCardProp
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => onDelete(meal.id)}
+              onClick={() => onDelete(meal.id.toString())}
               className="text-error hover:text-error"
             >
               Delete

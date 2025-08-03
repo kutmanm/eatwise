@@ -19,7 +19,7 @@ function AICoachContent() {
   const { subscription } = useSubscription();
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   
-  const isPremium = subscription?.plan === 'premium' && subscription?.active;
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
 
   const handleUpgrade = () => {
     router.push('/premium');
@@ -181,7 +181,7 @@ function AICoachContent() {
           {/* Right Column - AI Feedback */}
           <div className="lg:col-span-1">
             <AIFeedbackPanel 
-              meal={selectedMeal}
+              meal={selectedMeal || undefined}
               onUpgrade={handleUpgrade}
             />
           </div>

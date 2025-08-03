@@ -29,12 +29,34 @@ async def create_new_meal(
 async def get_meals(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, le=1000),
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    meals = await get_user_meals(current_user, db, skip, limit, start_date, end_date)
+    # Convert date strings to datetime objects if provided
+    start_datetime = None
+    end_datetime = None
+    
+    if start_date:
+        try:
+            start_datetime = datetime.fromisoformat(start_date)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+    
+    if end_date:
+        try:
+            end_datetime = datetime.fromisoformat(end_date)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+    
+    meals = await get_user_meals(current_user, db, skip, limit, start_datetime, end_datetime)
     return meals
 
 @router.get("/search", response_model=List[Meal])

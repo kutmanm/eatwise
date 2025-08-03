@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/Button';
 import { mealsApi } from '@/lib/api';
 import type { PhotoAnalysisResponse } from '@/types';
+import { compressImage } from '@/lib/utils';
 
 interface PhotoUploadProps {
   onAnalysisComplete: (analysis: PhotoAnalysisResponse) => void;
@@ -15,26 +16,47 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert image to base64'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    // Create preview
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
-
-    // Upload to Supabase Storage (simplified - you'd implement actual upload)
     try {
       setAnalyzing(true);
+
+      // Create preview
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
+
+      // Compress the image
+      const compressedBlob = await compressImage(file, {
+        maxWidth: 1024,
+        maxHeight: 1024,
+        quality: 0.8
+      });
+
+      if (!compressedBlob) {
+        throw new Error('Failed to compress image');
+      }
+
+      // Convert compressed image to base64
+      const base64Image = await convertToBase64(new File([compressedBlob], file.name, { type: compressedBlob.type }));
       
-      // For now, we'll simulate image URL - in real implementation:
-      // 1. Upload to Supabase Storage
-      // 2. Get public URL
-      // 3. Send to backend for analysis
-      
-      const imageUrl = previewUrl; // This would be the actual uploaded URL
-      
-      const response = await mealsApi.analyzePhoto(imageUrl);
+      const response = await mealsApi.analyzePhoto(base64Image);
       
       if (response.error) {
         onError(response.error);
@@ -42,6 +64,7 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
         onAnalysisComplete(response.data);
       }
     } catch (err) {
+      console.error('Photo upload error:', err);
       onError('Failed to analyze image. Please try again.');
     } finally {
       setAnalyzing(false);
@@ -140,7 +163,7 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
         </Button>
         <Button
           variant="outline"
-          onClick={() => document.querySelector('input[type="file"]')?.click()}
+          onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
           disabled={analyzing}
           className="flex-1"
         >

@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { usersApi } from '@/lib/api';
-import type { User, UserProfile } from '@/types';
+import type { User, UserProfile, ProfileFormData } from '@/types';
 
 export function useUser() {
   const { data, error, mutate } = useSWR<User>(
@@ -12,16 +12,28 @@ export function useUser() {
     }
   );
 
+  const updateUser = async (userData: { email?: string }) => {
+    try {
+      const response = await usersApi.updateCurrentUser(userData);
+      if (response.error) throw new Error(response.error);
+      mutate(response.data, false);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     user: data,
     loading: !error && !data,
     error,
     mutate,
+    updateUser,
   };
 }
 
 export function useUserProfile() {
-  const { data, error, mutate } = useSWR<UserProfile>(
+  const { data, error, mutate } = useSWR<UserProfile | null>(
     'user-profile',
     async () => {
       const response = await usersApi.getUserProfile();
@@ -33,11 +45,23 @@ export function useUserProfile() {
     }
   );
 
+  const updateProfile = async (profileData: Partial<ProfileFormData>) => {
+    try {
+      const response = await usersApi.updateUserProfile(profileData);
+      if (response.error) throw new Error(response.error);
+      mutate(response.data, false);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     profile: data,
     loading: !error && data === undefined,
     error: error && error.message !== 'User profile not found' ? error : null,
     mutate,
+    updateProfile,
   };
 }
 

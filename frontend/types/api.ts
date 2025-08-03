@@ -18,6 +18,11 @@ export interface UserProfile {
   weight: number;
   activity_level: ActivityLevel;
   goal: GoalType;
+  calorie_goal?: number;
+  protein_goal?: number;
+  carbs_goal?: number;
+  fat_goal?: number;
+  goal_weight?: number;
 }
 
 export interface Meal {
@@ -35,12 +40,11 @@ export interface Meal {
 }
 
 export interface Subscription {
-  id: number;
-  user_id: string;
-  plan: string;
-  start_date: string;
-  end_date?: string;
-  active: boolean;
+  has_subscription: boolean;
+  plan?: string;
+  status: string;
+  expires_at?: string;
+  active?: boolean; // computed property for backward compatibility
 }
 
 export interface DailyNutritionSummary {
@@ -58,6 +62,7 @@ export interface DailyNutritionSummary {
   fat_goal?: number;
 }
 
+// Update WeeklyProgressData to be more flexible for chart usage
 export interface WeeklyProgressData {
   week_start: string;
   daily_summaries: DailyNutritionSummary[];
@@ -65,6 +70,13 @@ export interface WeeklyProgressData {
   avg_protein: number;
   avg_carbs: number;
   avg_fat: number;
+  // Add direct access properties for charts
+  date?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
 }
 
 export interface ApiResponse<T> {

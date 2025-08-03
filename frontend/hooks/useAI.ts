@@ -115,3 +115,6 @@ export function useMealSuggestions() {
     clearSuggestions: () => setSuggestions(null),
   };
 }
+
+// Alias for backward compatibility
+export const useAIQuestion = useNutritionQuestion;

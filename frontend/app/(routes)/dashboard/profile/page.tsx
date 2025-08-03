@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -92,7 +91,7 @@ function ProfileContent() {
         setError(response.error);
       } else {
         setSuccess('Profile updated successfully!');
-        updateProfile(response.data);
+        updateProfile(response.data!);
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {

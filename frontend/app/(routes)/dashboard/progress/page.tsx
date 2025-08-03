@@ -60,7 +60,7 @@ function ProgressContent() {
       case 'calories':
         return (
           <CalorieChart 
-            data={weeklyProgress || []} 
+            data={weeklyProgress ? [weeklyProgress] : []} 
             calorieGoal={goals.calories}
           />
         );
@@ -68,15 +68,15 @@ function ProgressContent() {
       case 'macros':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MacroChart data={todayProgress || {}} />
-            <WeeklyProgressChart data={weeklyProgress || []} />
+            <MacroChart data={todayProgress || { date: new Date().toISOString().split('T')[0], meal_count: 0 }} />
+            <WeeklyProgressChart data={weeklyProgress ? [weeklyProgress] : []} />
           </div>
         );
       
       case 'goals':
         return (
           <GoalProgressChart 
-            data={weeklyProgress || []} 
+            data={weeklyProgress ? [weeklyProgress] : []} 
             goals={goals}
           />
         );
@@ -93,13 +93,13 @@ function ProgressContent() {
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <CalorieChart 
-              data={weeklyProgress || []} 
+              data={weeklyProgress ? [weeklyProgress] : []} 
               calorieGoal={goals.calories}
             />
-            <MacroChart data={todayProgress || {}} />
+            <MacroChart data={todayProgress || { date: new Date().toISOString().split('T')[0], meal_count: 0 }} />
             <div className="lg:col-span-2">
               <GoalProgressChart 
-                data={weeklyProgress || []} 
+                data={weeklyProgress ? [weeklyProgress] : []} 
                 goals={goals}
               />
             </div>
@@ -196,7 +196,7 @@ function ProgressContent() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-600">
-                    {weeklyProgress?.length || 0}
+                    {weeklyProgress?.daily_summaries?.length || 0}
                   </div>
                   <div className="text-sm text-neutral-600">Days logged</div>
                 </div>
@@ -204,8 +204,8 @@ function ProgressContent() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
                     {Math.round(
-                      (weeklyProgress?.reduce((sum, day) => sum + (day.calories || 0), 0) || 0) / 
-                      (weeklyProgress?.length || 1)
+                      (weeklyProgress?.daily_summaries?.reduce((sum: number, day: any) => sum + (day.calories || 0), 0) || 0) / 
+                      (weeklyProgress?.daily_summaries?.length || 1)
                     )}
                   </div>
                   <div className="text-sm text-neutral-600">Avg calories/day</div>
@@ -214,8 +214,8 @@ function ProgressContent() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
                     {Math.round(
-                      (weeklyProgress?.reduce((sum, day) => sum + (day.protein || 0), 0) || 0) / 
-                      (weeklyProgress?.length || 1)
+                      (weeklyProgress?.daily_summaries?.reduce((sum: number, day: any) => sum + (day.protein || 0), 0) || 0) / 
+                      (weeklyProgress?.daily_summaries?.length || 1)
                     )}g
                   </div>
                   <div className="text-sm text-neutral-600">Avg protein/day</div>
@@ -224,8 +224,8 @@ function ProgressContent() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {Math.round(
-                      ((weeklyProgress?.filter(day => (day.calories || 0) >= goals.calories * 0.9).length || 0) / 
-                      (weeklyProgress?.length || 1)) * 100
+                      ((weeklyProgress?.daily_summaries?.filter((day: any) => (day.calories || 0) >= goals.calories * 0.9).length || 0) / 
+                      (weeklyProgress?.daily_summaries?.length || 1)) * 100
                     )}%
                   </div>
                   <div className="text-sm text-neutral-600">Goal achievement</div>

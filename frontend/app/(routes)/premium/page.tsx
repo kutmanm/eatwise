@@ -13,7 +13,7 @@ function PremiumContent() {
   const { subscription, loading } = useSubscription();
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const isPremium = subscription?.plan === 'premium' && subscription?.active;
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
 
   const handleUpgrade = async () => {
     setIsProcessing(true);

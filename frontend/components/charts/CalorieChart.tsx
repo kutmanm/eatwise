@@ -12,7 +12,7 @@ interface CalorieChartProps {
 
 export function CalorieChart({ data, calorieGoal = 2000 }: CalorieChartProps) {
   const chartData = data.map(item => ({
-    date: formatDate(item.date, 'MMM dd'),
+    date: formatDate(item.date || new Date().toISOString(), 'MMM dd'),
     calories: item.calories || 0,
     goal: calorieGoal,
   }));

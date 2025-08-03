@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -13,12 +13,25 @@ interface AICoachingCardProps {
 
 export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
   const [question, setQuestion] = useState('');
-  const { askQuestion, loading: questionLoading, error } = useAIQuestion();
+  const { askQuestion, answer, loading: questionLoading, error } = useAIQuestion();
   const { tip, loading: tipLoading } = useDailyTip();
   const { subscription } = useSubscription();
   
-  const isPremium = subscription?.plan === 'premium' && subscription?.active;
+  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
   const [responses, setResponses] = useState<Array<{ question: string; answer: string; timestamp: Date }>>([]);
+  const [lastQuestion, setLastQuestion] = useState<string>('');
+
+  useEffect(() => {
+    if (answer && lastQuestion) {
+      setResponses(prev => [...prev, {
+        question: lastQuestion,
+        answer: answer,
+        timestamp: new Date()
+      }]);
+      setQuestion('');
+      setLastQuestion('');
+    }
+  }, [answer, lastQuestion]);
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
@@ -28,15 +41,8 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
       return;
     }
 
-    const response = await askQuestion(question);
-    if (response) {
-      setResponses(prev => [...prev, {
-        question: question.trim(),
-        answer: response,
-        timestamp: new Date()
-      }]);
-      setQuestion('');
-    }
+    setLastQuestion(question.trim());
+    await askQuestion(question);
   };
 
   return (
