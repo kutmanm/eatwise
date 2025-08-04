@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useUserProfile, useUser } from '@/hooks/useUser';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 import { usersApi } from '@/lib/api';
 import { profileSchema, type ProfileFormData } from '@/types';
 import { getActivityLevelLabel, getGoalLabel } from '@/lib/utils';
@@ -19,6 +20,7 @@ function ProfileContent() {
   const router = useRouter();
   const { user, updateUser } = useUser();
   const { profile, updateProfile, loading: profileLoading } = useUserProfile();
+  const { signOut } = useAuthContext();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -101,29 +103,17 @@ function ProfileContent() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      return;
-    }
-
-    const confirmText = prompt('Type "DELETE" to confirm account deletion:');
-    if (confirmText !== 'DELETE') {
-      alert('Account deletion cancelled.');
-      return;
-    }
-
-    try {
-      // In real implementation, this would call the delete account API
-      alert('Account deletion would be processed in a real implementation');
-    } catch (err) {
-      setError('Failed to delete account. Please contact support.');
-    }
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/');
   };
+
+
 
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500" />
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00b800]" />
       </div>
     );
   }
@@ -131,66 +121,10 @@ function ProfileContent() {
   const goals = calculateGoals();
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.back()}
-              >
-                ← Back
-              </Button>
-              <h1 className="text-xl font-semibold text-neutral-900">Profile Settings</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Account Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-neutral-100"
-                  />
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Email cannot be changed
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-neutral-500">Member since:</span>
-                    <p className="font-medium">
-                      {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-neutral-500">Account type:</span>
-                    <p className="font-medium capitalize">
-                      {user?.role || 'Free'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Profile Settings */}
             <Card>
               <CardHeader>
@@ -291,30 +225,6 @@ function ProfileContent() {
                 </form>
               </CardContent>
             </Card>
-
-            {/* Danger Zone */}
-            <Card className="border-red-200">
-              <CardHeader>
-                <CardTitle className="text-red-600">Danger Zone</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-neutral-900 mb-2">Delete Account</h4>
-                    <p className="text-sm text-neutral-600 mb-4">
-                      Permanently delete your account and all associated data. This action cannot be undone.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={handleDeleteAccount}
-                      className="border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      Delete Account
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Sidebar */}
@@ -327,11 +237,11 @@ function ProfileContent() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-primary-50 p-3 rounded-lg text-center">
-                      <div className="text-lg font-bold text-primary-600">
+                    <div className="bg-[#00b800]/10 p-3 rounded-lg text-center">
+                      <div className="text-lg font-bold text-[#00b800]">
                         {goals.calories}
                       </div>
-                      <div className="text-xs text-primary-700">Calories/day</div>
+                      <div className="text-xs text-[#00b800]/80">Calories/day</div>
                     </div>
                     <div className="bg-blue-50 p-3 rounded-lg text-center">
                       <div className="text-lg font-bold text-blue-600">
@@ -431,11 +341,17 @@ function ProfileContent() {
                 >
                   Manage Subscription
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                  onClick={handleSignOut}
+                >
+                  Sign Out
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
-      </main>
     </div>
   );
 }

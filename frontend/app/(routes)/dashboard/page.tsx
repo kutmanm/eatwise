@@ -33,41 +33,13 @@ function DashboardContent() {
   if (progressLoading || mealsLoading || streakLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500" />
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00b800]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-neutral-900">EatWise</h1>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/dashboard/profile')}
-              >
-                Profile
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/dashboard/history')}
-              >
-                History
-              </Button>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-neutral-900 mb-2">
             Good day! 👋
@@ -137,7 +109,6 @@ function DashboardContent() {
             </Button>
           </div>
         </div>
-      </main>
     </div>
   );
 }

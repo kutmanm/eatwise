@@ -32,7 +32,7 @@ export function MealTimeline({ meals, onAddMeal }: MealTimelineProps) {
           <div className="space-y-4">
             {meals.map((meal) => (
               <div key={meal.id} className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
-                <div className="flex-shrink-0 w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <div className="flex-shrink-0 w-2 h-2 bg-[#00b800] rounded-full mt-2" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-medium text-neutral-900 truncate">

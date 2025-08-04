@@ -27,7 +27,7 @@ export function NutritionCard({ progress }: NutritionCardProps) {
       current: calories,
       goal: calorie_goal,
       unit: 'cal',
-      color: 'text-primary-600',
+      color: 'text-[#00b800]',
       bgColor: 'bg-primary-100',
     },
     {

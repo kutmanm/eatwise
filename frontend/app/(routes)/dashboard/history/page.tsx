@@ -149,40 +149,18 @@ function MealHistoryContent() {
   const totalMeals = filteredMeals.length;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.back()}
-              >
-                ← Back
-              </Button>
-              <h1 className="text-xl font-semibold text-neutral-900">Meal History</h1>
-            </div>
-            <Button onClick={() => router.push('/dashboard/add-meal')}>
-              Add Meal
-            </Button>
-          </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {error && (
+        <div className="mb-6 rounded-md bg-error/10 p-4">
+          <p className="text-sm text-error">{error}</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="mb-6 rounded-md bg-error/10 p-4">
-            <p className="text-sm text-error">{error}</p>
-          </div>
-        )}
+      )}
 
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary-600">{totalMeals}</div>
+              <div className="text-2xl font-bold text-[#00b800]">{totalMeals}</div>
               <div className="text-sm text-neutral-600">Meals found</div>
             </CardContent>
           </Card>
@@ -223,7 +201,7 @@ function MealHistoryContent() {
         <div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500" />
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00b800]" />
             </div>
           ) : filteredMeals.length === 0 ? (
             <Card>
@@ -266,7 +244,6 @@ function MealHistoryContent() {
             </Button>
           </div>
         )}
-      </main>
 
       {/* Modals */}
       <MealDetailModal
@@ -278,7 +255,6 @@ function MealHistoryContent() {
         }}
         onEdit={handleEdit}
       />
-
       {/* Edit Modal */}
       {isEditModalOpen && editingMeal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -299,13 +275,13 @@ function MealHistoryContent() {
               <CardContent>
                 <NutritionEditor
                   initialData={{
-                    description: editingMeal.description || '',
-                    calories: editingMeal.calories || 0,
-                    protein: editingMeal.protein || 0,
-                    carbs: editingMeal.carbs || 0,
-                    fat: editingMeal.fat || 0,
-                    fiber: editingMeal.fiber || 0,
-                    water: editingMeal.water || 0,
+                    description: editingMeal!.description || '',
+                    calories: editingMeal!.calories || 0,
+                    protein: editingMeal!.protein || 0,
+                    carbs: editingMeal!.carbs || 0,
+                    fat: editingMeal!.fat || 0,
+                    fiber: editingMeal!.fiber || 0,
+                    water: editingMeal!.water || 0,
                   }}
                   onSave={handleUpdateMeal}
                   onCancel={() => {

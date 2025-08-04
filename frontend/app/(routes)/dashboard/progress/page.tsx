@@ -50,7 +50,7 @@ function ProgressContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500" />
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00b800]" />
       </div>
     );
   }
@@ -109,29 +109,7 @@ function ProgressContent() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.back()}
-              >
-                ← Back
-              </Button>
-              <h1 className="text-xl font-semibold text-neutral-900">Progress</h1>
-            </div>
-            <Button onClick={() => router.push('/dashboard/add-meal')}>
-              Add Meal
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Controls */}
         <div className="mb-8 space-y-4">
           {/* Time Range Selector */}
@@ -257,7 +235,6 @@ function ProgressContent() {
             </Button>
           </div>
         </div>
-      </main>
     </div>
   );
 }

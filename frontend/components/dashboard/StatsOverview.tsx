@@ -22,7 +22,7 @@ export function StatsOverview({ progress, streak }: StatsOverviewProps) {
       value: progress.meal_count || 0,
       unit: 'meals',
       icon: '🍽️',
-      color: 'text-primary-600',
+      color: 'text-[#00b800]',
     },
     {
       title: 'Calories',

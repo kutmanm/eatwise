@@ -82,26 +82,7 @@ function AddMealContent() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.back()}
-              >
-                ← Back
-              </Button>
-              <h1 className="text-xl font-semibold text-neutral-900">Add Meal</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
           <div className="mb-6 rounded-md bg-error/10 p-4">
             <p className="text-sm text-error">{error}</p>
@@ -226,7 +207,6 @@ function AddMealContent() {
             </Card>
           </div>
         )}
-      </main>
     </div>
   );
 }
