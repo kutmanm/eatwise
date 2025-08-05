@@ -1,16 +1,18 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-// Import FontAwesome icons with fallback
-let FaClipboardList: any, FaCirclePlus: any, FaUser: any;
+// Import specific icons with fallback
+let LuScanLine: any, AiFillHome: any, FaCalendarAlt: any;
 
 try {
-  ({ FaClipboardList, FaCirclePlus, FaUser } = require('react-icons/fa6'));
+  ({ LuScanLine } = require('react-icons/lu'));
+  ({ AiFillHome } = require('react-icons/ai'));
+  ({ FaCalendarAlt } = require('react-icons/fa'));
 } catch (e) {
   // Fallback если react-icons не установлены
-  FaClipboardList = ({ size }: { size: number }) => <span style={{ fontSize: size }}>📋</span>;
-  FaCirclePlus = ({ size }: { size: number }) => <span style={{ fontSize: size }}>➕</span>;
-  FaUser = ({ size }: { size: number }) => <span style={{ fontSize: size }}>👤</span>;
+  LuScanLine = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📷</span>;
+  AiFillHome = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>🏠</span>;
+  FaCalendarAlt = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📅</span>;
 }
 
 interface NavItem {
@@ -27,19 +29,19 @@ export function BottomNavBar() {
   const navItems: NavItem[] = [
     {
       path: '/dashboard',
-      label: 'Diary',
-      icon: <FaClipboardList size={28} />,
+      label: 'Home',
+      icon: <AiFillHome size={24} />,
     },
     {
       path: '/dashboard/add-meal',
-      label: 'Add',
-      icon: <FaCirclePlus size={40} />,
-      isIconOnly: true,
+      label: 'Scan',
+      icon: <LuScanLine size={28} />,
+      isIconOnly: false,
     },
     {
       path: '/dashboard/profile',
-      label: 'Me',
-      icon: <FaUser size={28} />,
+      label: 'Plan',
+      icon: <FaCalendarAlt size={24} />,
       isIconOnly: false,
     },
   ];
@@ -56,35 +58,30 @@ export function BottomNavBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 safe-bottom z-50 md:hidden">
-      <div className="flex items-center justify-around px-2 py-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg safe-bottom z-50 md:hidden">
+      <div className="flex items-center justify-around px-4 py-3">
         {navItems.map((item) => {
           const active = isActive(item.path);
-          const isPlusButton = item.path === '/dashboard/add-meal';
           
           return (
             <button
               key={item.path}
               onClick={() => handleNavigation(item.path)}
-              className={`flex flex-col items-center transition-all duration-200 ${
-                isPlusButton 
-                  ? 'px-4' // Padding для плюса
-                  : 'px-3 flex-1' // Равномерное распределение для остальных
-              } ${
+              className={`flex flex-col items-center transition-all duration-200 px-3 flex-1 ${
                 active
-                  ? 'text-[#00b800]'
-                  : 'text-[#3b3836] hover:text-[#00b800]'
+                  ? 'text-gray-900'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              {/* Область для иконки - фиксированная высота для всех */}
-              <div className={`flex items-center justify-center h-[40px] ${active && !isPlusButton ? 'scale-105' : ''} transition-transform duration-200`}>
+              {/* Область для иконки */}
+              <div className={`flex items-center justify-center h-[36px] ${active ? 'scale-105' : ''} transition-transform duration-200`}>
                 {item.icon}
               </div>
               
-              {/* Область для текста - фиксированная высота для всех */}
+              {/* Область для текста */}
               <div className="h-[16px] flex items-center justify-center">
                 {!item.isIconOnly && (
-                  <span className={`text-[10px] font-medium ${active ? 'text-[#00b800]' : 'text-[#3b3836]'}`}>
+                  <span className={`text-xs font-medium ${active ? 'text-gray-900' : 'text-gray-400'}`}>
                     {item.label}
                   </span>
                 )}

@@ -20,32 +20,23 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const getPageTitle = () => {
     if (pageTitle) return pageTitle;
     
-    if (pathname.includes('/dashboard/add-meal')) return 'Add Meal';
-    if (pathname.includes('/dashboard/profile')) return 'Profile';
-    if (pathname.includes('/dashboard/history')) return 'History';
-    if (pathname.includes('/dashboard/progress')) return 'Progress';
-    if (pathname.includes('/dashboard/coach')) return 'AI Coach';
-    if (pathname.includes('/dashboard')) return 'Diary';
+    if (pathname.includes('/dashboard/add-meal')) return 'Scan';
+    if (pathname.includes('/dashboard/profile')) return 'Plan';
+    if (pathname.includes('/dashboard/history')) return 'Food log';
+    if (pathname.includes('/dashboard/progress')) return 'Plan';
+    if (pathname.includes('/dashboard/coach')) return 'Plan';
+    if (pathname.includes('/dashboard')) return 'Home';
     if (pathname.includes('/onboarding')) return 'Setup';
-    return 'EatWise';
+    return 'Home';
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7]">
+    <div className="min-h-screen bg-[#f9f9fa]">
       {/* Simple Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-[#f9f9fa] border-none sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-[#00b800]">EatWise</h1>
-              <span className="text-neutral-400">•</span>
-              <h2 className="text-lg font-semibold text-neutral-900">{getPageTitle()}</h2>
-            </div>
-            
-            {/* Desktop Navigation - Optional for larger screens */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Add desktop nav items here if needed */}
-            </div>
+          <div className="flex justify-center items-center h-16">
+            <h2 className="text-lg font-medium text-gray-900">{getPageTitle()}</h2>
           </div>
         </div>
       </header>

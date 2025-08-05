@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
-import { NutritionCard } from '@/components/dashboard/NutritionCard';
+
 import { MealTimeline } from '@/components/dashboard/MealTimeline';
 import { DailyTipCard } from '@/components/dashboard/DailyTipCard';
-import { StatsOverview } from '@/components/dashboard/StatsOverview';
+import { NutritionCircles } from '@/components/dashboard/NutritionCircles';
 import { Button } from '@/components/ui/Button';
 import { useTodaysProgress } from '@/hooks/useProgress';
 import { useTodaysMeals } from '@/hooks/useMeals';
@@ -33,25 +33,16 @@ function DashboardContent() {
   if (progressLoading || mealsLoading || streakLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00b800]" />
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#f9f9fa] min-h-screen">
+        {/* Nutrition Circles */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-            Good day! 👋
-          </h2>
-          <p className="text-neutral-600">
-            Here's your nutrition overview for today
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="mb-8">
-          <StatsOverview 
+          <NutritionCircles 
             progress={progress || {
               date: new Date().toISOString(),
               meal_count: 0,
@@ -62,30 +53,13 @@ function DashboardContent() {
               fiber: 0,
               water: 0,
             }} 
-            streak={streak}
           />
         </div>
 
         {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Nutrition Card */}
-          <div className="lg:col-span-1">
-            <NutritionCard 
-              progress={progress || {
-                date: new Date().toISOString(),
-                meal_count: 0,
-                calories: 0,
-                protein: 0,
-                carbs: 0,
-                fat: 0,
-                fiber: 0,
-                water: 0,
-              }}
-            />
-          </div>
-
-          {/* Right Column - Meals and Tips */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 gap-8">
+          {/* Meals and Tips */}
+          <div className="space-y-6">
             <MealTimeline 
               meals={meals} 
               onAddMeal={handleAddMeal}
@@ -97,12 +71,15 @@ function DashboardContent() {
         {/* Quick Actions */}
         <div className="mt-8 flex justify-center">
           <div className="flex space-x-4">
-            <Button size="lg" onClick={handleAddMeal}>
+            <Button 
+              className="bg-gray-900 text-white hover:bg-gray-800 rounded-2xl px-6 py-3"
+              onClick={handleAddMeal}
+            >
               + Log Meal
             </Button>
             <Button 
-              variant="outline" 
-              size="lg"
+              className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 rounded-2xl px-6 py-3"
+              variant="outline"
               onClick={() => router.push('/dashboard/progress')}
             >
               View Progress
