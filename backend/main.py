@@ -4,9 +4,14 @@ from api.users.routes import router as users_router
 from api.meals.routes import router as meals_router
 from api.progress.routes import router as progress_router
 from api.ai.routes import router as ai_router
-from api.feedback.routes import router as feedback_router
+from api.subsciption.routes import router as subscription_router
 from utils.config import settings
-from models.database import create_tables
+from utils.helpers import run_migrations
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="EatWise API",
@@ -14,10 +19,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Create database tables on startup
+# Run database migrations on startup
 @app.on_event("startup")
 async def startup_event():
-    create_tables()
+    try:
+        logger.info("Starting database migrations...")
+        run_migrations()
+        logger.info("Application startup completed successfully")
+    except Exception as e:
+        logger.error(f"Database migration failed during startup: {e}")
+        logger.warning("Application will continue to run, but database may not be properly initialized")
+        logger.warning("Please check your DATABASE_URL and ensure the database is accessible")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,7 +43,7 @@ app.include_router(users_router)
 app.include_router(meals_router)
 app.include_router(progress_router)
 app.include_router(ai_router)
-app.include_router(feedback_router)
+app.include_router(subscription_router)
 
 @app.get("/")
 def read_root():

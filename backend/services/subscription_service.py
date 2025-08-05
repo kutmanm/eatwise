@@ -14,8 +14,13 @@ STRIPE_PRICE_IDS = {
     "premium_monthly": "price_premium_monthly",
     "premium_yearly": "price_premium_yearly"
 }
-
-async def create_checkout_session(user: User, plan: str, success_url: str, cancel_url: str) -> Dict[str, str]:
+async def create_checkout_session(
+    user: User, 
+    plan: str, 
+    success_url: str, 
+    cancel_url: str,
+    promo_code_str: Optional[str] = None
+) -> Dict[str, str]:
     try:
         price_id = STRIPE_PRICE_IDS.get(plan)
         if not price_id:
@@ -23,6 +28,20 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid subscription plan"
             )
+
+        discounts = None
+        if promo_code_str:
+            promo_codes = stripe.PromotionCode.list(
+                code=promo_code_str,
+                active=True,
+                limit=1
+            )
+            if not promo_codes.data:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid or expired promo code"
+                )
+            discounts = [{"promotion_code": promo_codes.data[0].id}]
         
         session = stripe.checkout.Session.create(
             customer_email=user.email,
@@ -32,6 +51,10 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
                 "quantity": 1,
             }],
             mode="subscription",
+            subscription_data={
+                "trial_period_days": 7
+            },
+            discounts=discounts,
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={
@@ -44,7 +67,7 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
             "checkout_url": session.url,
             "session_id": session.id
         }
-    
+
     except stripe.error.StripeError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -72,8 +95,33 @@ async def handle_webhook_event(event_data: Dict[str, Any], signature: str, db: S
     elif event["type"] == "customer.subscription.deleted":
         subscription = event["data"]["object"]
         await handle_subscription_cancelled(subscription, db)
-    
+    elif event["type"] == "customer.subscription.updated":
+        subscription = event["data"]["object"]
+        await handle_subscription_updated(subscription, db)
+
     return True
+async def handle_subscription_updated(subscription_data: Dict[str, Any], db: Session):
+    customer_id = subscription_data["customer"]
+    status = subscription_data["status"]  # active, trialing, canceled
+    current_period_end = subscription_data["current_period_end"]
+
+    try:
+        customer = stripe.Customer.retrieve(customer_id)
+        user = db.query(User).filter(User.email == customer.email).first()
+
+        if not user:
+            return
+
+        if status in ["active", "trialing"]:
+            user.role = UserRole.PREMIUM
+        else:
+            user.role = UserRole.FREE
+        
+        user.subscription_expires_at = datetime.utcfromtimestamp(current_period_end)
+        db.commit()
+    
+    except stripe.error.StripeError:
+        pass
 
 async def handle_successful_payment(session_data: Dict[str, Any], db: Session):
     user_id = session_data["metadata"]["user_id"]
@@ -167,7 +215,7 @@ def get_subscription_plans() -> Dict[str, Any]:
         },
         "premium_yearly": {
             "name": "Premium Yearly",
-            "price": 99.99,
+            "price": 167.88,
             "currency": "usd",
             "interval": "year",
             "features": [

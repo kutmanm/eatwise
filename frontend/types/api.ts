@@ -44,7 +44,7 @@ export interface Subscription {
   plan?: string;
   status: string;
   expires_at?: string;
-  active?: boolean; // computed property for backward compatibility
+  active?: boolean; 
 }
 
 export interface DailyNutritionSummary {
