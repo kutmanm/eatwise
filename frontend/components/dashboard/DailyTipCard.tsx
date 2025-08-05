@@ -10,7 +10,6 @@ export function DailyTipCard() {
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
-          <span className="mr-2">💡</span>
           Daily Tip
         </CardTitle>
       </CardHeader>

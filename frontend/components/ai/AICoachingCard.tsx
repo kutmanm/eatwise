@@ -63,7 +63,7 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
       <CardContent className="space-y-4">
         {/* Daily Tip */}
         <div className="bg-primary-50 p-4 rounded-lg">
-          <h4 className="font-medium text-primary-800 mb-2">💡 Daily Tip</h4>
+          <h4 className="font-medium text-primary-800 mb-2">Daily Tip</h4>
           {tipLoading ? (
             <div className="animate-pulse">
               <div className="h-4 bg-primary-200 rounded w-3/4 mb-2" />
