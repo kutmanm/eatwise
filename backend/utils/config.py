@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_key: str
     supabase_jwt_secret: str
+    supabase_service_role_key: str
+    supabase_anon_key: str
+    supabase_storage_bucket: str
     openai_api_key: str
     stripe_secret_key: str
     stripe_publishable_key: str
