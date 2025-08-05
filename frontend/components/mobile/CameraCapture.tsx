@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
+import { LuScanLine } from 'react-icons/lu';
 
 interface CameraCaptureProps {
   onCapture: (imageBlob: Blob) => void;
@@ -10,7 +11,7 @@ interface CameraCaptureProps {
 
 export function CameraCapture({ onCapture, onError }: CameraCaptureProps) {
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isCaptureMode, setIsCaptureMode] = useState(false);
+  const [isCaptureMode, setIsCaptureMode] = useState(true); // Auto start in capture mode
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -75,76 +76,50 @@ export function CameraCapture({ onCapture, onError }: CameraCaptureProps) {
     }, 'image/jpeg', 0.8);
   }, [onCapture, onError, stopCamera]);
 
-  if (!isCaptureMode) {
+  // Auto-start camera when component mounts
+  useEffect(() => {
+    startCamera();
+    
+    // Cleanup on unmount
+    return () => {
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
+
+  if (!isStreaming) {
     return (
-      <div className="space-y-4">
-        <div className="camera-preview bg-neutral-100 flex items-center justify-center">
-          <div className="text-center text-neutral-500">
-            <div className="text-4xl mb-2">📷</div>
-            <p className="text-sm">Ready to capture your meal</p>
-          </div>
-        </div>
-        
-        <div className="flex space-x-3">
-          <Button 
-            onClick={startCamera}
-            className="flex-1 touch-target"
-          >
-            📸 Open Camera
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.onchange = (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (file) {
-                  onCapture(file);
-                }
-              };
-              input.click();
-            }}
-            className="flex-1 touch-target"
-          >
-            📁 Gallery
-          </Button>
+      <div className="h-full flex items-center justify-center bg-black">
+        <div className="text-center text-white">
+          <LuScanLine size={48} className="mx-auto mb-4" />
+          <p className="text-lg">Starting camera...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="camera-preview relative">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover"
-        />
-        
-        {/* Camera overlay for better framing */}
-        <div className="camera-overlay" />
-        
-        {/* Camera controls overlay */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={stopCamera}
-            className="bg-white/90 text-neutral-800 touch-target"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={capturePhoto}
-            className="bg-primary-500 text-white touch-target px-6"
-          >
-            📸 Capture
-          </Button>
-        </div>
+    <div className="h-full w-full relative">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-cover"
+      />
+      
+      {/* Camera overlay for better framing */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-x-8 inset-y-16 border-2 border-white/50 rounded-2xl"></div>
+      </div>
+      
+      {/* Camera controls overlay */}
+      <div className="absolute bottom-32 left-0 right-0 flex justify-center">
+        <button
+          onClick={capturePhoto}
+          className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg"
+        >
+          <LuScanLine size={32} className="text-black" />
+        </button>
       </div>
 
       {/* Hidden canvas for photo capture */}

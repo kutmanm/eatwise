@@ -2,17 +2,21 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 // Import specific icons with fallback
-let LuScanLine: any, AiFillHome: any, FaCalendarAlt: any;
+let LuScanLine: any, AiFillHome: any, FaCalendarAlt: any, IoIosPie: any, RiRobot2Fill: any;
 
 try {
   ({ LuScanLine } = require('react-icons/lu'));
   ({ AiFillHome } = require('react-icons/ai'));
   ({ FaCalendarAlt } = require('react-icons/fa'));
+  ({ IoIosPie } = require('react-icons/io'));
+  ({ RiRobot2Fill } = require('react-icons/ri'));
 } catch (e) {
   // Fallback если react-icons не установлены
   LuScanLine = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📷</span>;
   AiFillHome = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>🏠</span>;
   FaCalendarAlt = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📅</span>;
+  IoIosPie = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📊</span>;
+  RiRobot2Fill = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>🤖</span>;
 }
 
 interface NavItem {
@@ -33,9 +37,21 @@ export function BottomNavBar() {
       icon: <AiFillHome size={24} />,
     },
     {
+      path: '/dashboard/assistant',
+      label: 'Assistant',
+      icon: <RiRobot2Fill size={24} />,
+      isIconOnly: false,
+    },
+    {
       path: '/dashboard/add-meal',
       label: 'Scan',
       icon: <LuScanLine size={28} />,
+      isIconOnly: false,
+    },
+    {
+      path: '/dashboard/progress',
+      label: 'Progress',
+      icon: <IoIosPie size={24} />,
       isIconOnly: false,
     },
     {

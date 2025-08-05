@@ -1,7 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { BottomNavBar } from '@/components/mobile/BottomNavBar';
+import { IoArrowBack } from 'react-icons/io5';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,10 +11,37 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   
   // Don't show layout on landing page
   if (pathname === '/') {
     return <>{children}</>;
+  }
+
+  // Special handling for scan page - full screen layout
+  if (pathname.includes('/dashboard/add-meal')) {
+    return (
+      <div className="h-screen w-screen relative">
+        {/* Scan page navbar */}
+        <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
+          <div className="flex items-center justify-between p-4">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center"
+            >
+              <IoArrowBack size={20} className="text-gray-700" />
+            </button>
+            <h2 className="text-lg font-medium text-white bg-black/50 px-3 py-1 rounded-full">Scan</h2>
+            <div className="w-10 h-10" /> {/* Spacer for center alignment */}
+          </div>
+        </header>
+        
+        {children}
+        
+        {/* Bottom Navigation */}
+        <BottomNavBar />
+      </div>
+    );
   }
 
   // Get page title based on current route
@@ -21,9 +49,10 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     if (pageTitle) return pageTitle;
     
     if (pathname.includes('/dashboard/add-meal')) return 'Scan';
+    if (pathname.includes('/dashboard/assistant')) return 'Assistant';
     if (pathname.includes('/dashboard/profile')) return 'Plan';
     if (pathname.includes('/dashboard/history')) return 'Food log';
-    if (pathname.includes('/dashboard/progress')) return 'Plan';
+    if (pathname.includes('/dashboard/progress')) return 'Progress';
     if (pathname.includes('/dashboard/coach')) return 'Plan';
     if (pathname.includes('/dashboard')) return 'Home';
     if (pathname.includes('/onboarding')) return 'Setup';

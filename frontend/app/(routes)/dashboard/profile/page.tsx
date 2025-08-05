@@ -323,13 +323,6 @@ function ProfileContent() {
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => router.push('/dashboard/progress')}
-                >
-                  View Progress
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
                   onClick={() => router.push('/dashboard/history')}
                 >
                   Meal History
