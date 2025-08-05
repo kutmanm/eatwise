@@ -5,17 +5,10 @@ from models.user import User
 from models.meal import Meal
 from schemas.meal import MealCreate, MealUpdate, PhotoAnalysisRequest, ChatLogRequest, DailyNutritionSummary, WeeklyProgressData
 from services.ai_service import analyze_meal_photo, parse_meal_text
-from services.user_service import check_freemium_limits
 from datetime import datetime, timedelta, date
 from fastapi import HTTPException, status
 
 async def create_meal(user: User, meal_data: MealCreate, db: Session) -> Meal:
-    limits_check = await check_freemium_limits(user, db, "meal_log")
-    if not limits_check["allowed"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=limits_check["reason"]
-        )
     
     meal = Meal(
         user_id=user.id,

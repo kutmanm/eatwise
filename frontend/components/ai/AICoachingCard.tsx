@@ -5,19 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAIQuestion, useDailyTip } from '@/hooks/useAI';
-import { useSubscription } from '@/hooks/useUser';
 
-interface AICoachingCardProps {
-  onUpgrade?: () => void;
-}
-
-export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
+export function AICoachingCard() {
   const [question, setQuestion] = useState('');
   const { askQuestion, answer, loading: questionLoading, error } = useAIQuestion();
   const { tip, loading: tipLoading } = useDailyTip();
-  const { subscription } = useSubscription();
   
-  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
   const [responses, setResponses] = useState<Array<{ question: string; answer: string; timestamp: Date }>>([]);
   const [lastQuestion, setLastQuestion] = useState<string>('');
 
@@ -35,11 +28,6 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
-    
-    if (!isPremium) {
-      onUpgrade?.();
-      return;
-    }
 
     setLastQuestion(question.trim());
     await askQuestion(question);
@@ -48,16 +36,9 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center">
-            <span className="mr-2">🤖</span>
-            AI Coach
-          </span>
-          {!isPremium && (
-            <Button size="sm" onClick={onUpgrade}>
-              Upgrade to Premium
-            </Button>
-          )}
+        <CardTitle className="flex items-center">
+          <span className="mr-2">🤖</span>
+          AI Coach
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -81,26 +62,20 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
           <h4 className="font-medium text-neutral-900">Ask your coach</h4>
           <div className="flex space-x-2">
             <Input
-              placeholder={isPremium ? "Ask about nutrition, meals, or goals..." : "Upgrade to ask questions"}
+              placeholder="Ask about nutrition, meals, or goals..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAskQuestion()}
-              disabled={!isPremium || questionLoading}
+              disabled={questionLoading}
             />
             <Button 
               onClick={handleAskQuestion}
               loading={questionLoading}
-              disabled={!question.trim() || (!isPremium && !onUpgrade)}
+              disabled={!question.trim()}
             >
               Ask
             </Button>
           </div>
-          
-          {!isPremium && (
-            <p className="text-xs text-neutral-500">
-              Premium members get unlimited AI coaching questions
-            </p>
-          )}
           
           {error && (
             <p className="text-xs text-error">{error}</p>
@@ -123,29 +98,6 @@ export function AICoachingCard({ onUpgrade }: AICoachingCardProps) {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Quick Questions for Free Users */}
-        {!isPremium && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-neutral-900">Popular questions</h4>
-            <div className="space-y-1">
-              {[
-                "How can I increase my protein intake?",
-                "What are good pre-workout snacks?",
-                "How much water should I drink daily?",
-                "Best foods for muscle recovery?"
-              ].map((q, index) => (
-                <button
-                  key={index}
-                  onClick={() => onUpgrade?.()}
-                  className="w-full text-left text-xs text-neutral-600 hover:text-primary-600 p-2 rounded hover:bg-neutral-50 transition-colors"
-                >
-                  💭 {q}
-                </button>
-              ))}
-            </div>
           </div>
         )}
       </CardContent>

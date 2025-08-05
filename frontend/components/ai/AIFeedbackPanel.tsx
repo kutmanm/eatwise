@@ -4,21 +4,16 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useMealFeedback, useMealSuggestions } from '@/hooks/useAI';
-import { useSubscription } from '@/hooks/useUser';
 import type { Meal } from '@/types';
 
 interface AIFeedbackPanelProps {
   meal?: Meal;
-  onUpgrade?: () => void;
 }
 
-export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
+export function AIFeedbackPanel({ meal }: AIFeedbackPanelProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { feedback, getFeedback, loading: feedbackLoading } = useMealFeedback();
   const { suggestions, getSuggestions, loading: suggestionsLoading } = useMealSuggestions();
-  const { subscription } = useSubscription();
-  
-  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
 
   useEffect(() => {
     if (meal?.id) {
@@ -27,11 +22,6 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
   }, [meal?.id, getFeedback]);
 
   const handleGetSuggestions = async () => {
-    if (!isPremium) {
-      onUpgrade?.();
-      return;
-    }
-    
     if (meal?.id) {
       setShowSuggestions(true);
       await getSuggestions(meal.id);
@@ -52,16 +42,9 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center">
-            <span className="mr-2">🎯</span>
-            AI Feedback
-          </span>
-          {!isPremium && (
-            <Button size="sm" onClick={onUpgrade}>
-              Upgrade
-            </Button>
-          )}
+        <CardTitle className="flex items-center">
+          <span className="mr-2">🎯</span>
+          AI Feedback
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -86,7 +69,7 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
           )}
         </div>
 
-        {/* Meal Improvements (Premium) */}
+        {/* Meal Improvements */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-medium text-neutral-900">Improvement Suggestions</h4>
@@ -96,9 +79,8 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
                 variant="outline"
                 onClick={handleGetSuggestions}
                 loading={suggestionsLoading}
-                disabled={!isPremium && !onUpgrade}
               >
-                {isPremium ? 'Get Suggestions' : '🔒 Premium'}
+                Get Suggestions
               </Button>
             )}
           </div>
@@ -111,12 +93,6 @@ export function AIFeedbackPanel({ meal, onUpgrade }: AIFeedbackPanelProps) {
           ) : showSuggestions && suggestions ? (
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-green-800">{suggestions}</p>
-            </div>
-          ) : !isPremium ? (
-            <div className="bg-neutral-50 p-3 rounded-lg border-2 border-dashed border-neutral-200">
-              <p className="text-sm text-neutral-600 text-center">
-                🔒 Premium feature: Get personalized meal improvement suggestions
-              </p>
             </div>
           ) : null}
         </div>

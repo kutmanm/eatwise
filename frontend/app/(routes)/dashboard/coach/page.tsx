@@ -10,20 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { AICoachingCard } from '@/components/ai/AICoachingCard';
 import { AIFeedbackPanel } from '@/components/ai/AIFeedbackPanel';
 import { useTodaysMeals } from '@/hooks/useMeals';
-import { useSubscription } from '@/hooks/useUser';
 import type { Meal } from '@/types';
 
 function AICoachContent() {
   const router = useRouter();
   const { meals, loading } = useTodaysMeals();
-  const { subscription } = useSubscription();
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  
-  const isPremium = subscription?.plan === 'premium' && subscription?.status === 'active';
-
-  const handleUpgrade = () => {
-    router.push('/premium');
-  };
 
   if (loading) {
     return (
@@ -38,7 +30,7 @@ function AICoachContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - AI Coaching */}
           <div className="lg:col-span-1">
-            <AICoachingCard onUpgrade={handleUpgrade} />
+            <AICoachingCard />
           </div>
 
           {/* Middle Column - Today's Meals */}
@@ -150,53 +142,9 @@ function AICoachContent() {
           <div className="lg:col-span-1">
             <AIFeedbackPanel 
               meal={selectedMeal || undefined}
-              onUpgrade={handleUpgrade}
             />
           </div>
         </div>
-
-        {/* Premium Features Showcase */}
-        {!isPremium && (
-          <div className="mt-12">
-            <Card className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
-              <CardContent className="p-8">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-4">Unlock Advanced AI Coaching</h2>
-                  <p className="text-primary-100 mb-6">
-                    Get unlimited questions, personalized meal suggestions, and detailed nutrition insights
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center">
-                      <div className="text-3xl mb-2">💬</div>
-                      <h3 className="font-semibold mb-1">Unlimited Chat</h3>
-                      <p className="text-sm text-primary-100">Ask your AI coach anything about nutrition</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl mb-2">🎯</div>
-                      <h3 className="font-semibold mb-1">Meal Optimization</h3>
-                      <p className="text-sm text-primary-100">Get suggestions to improve every meal</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl mb-2">📊</div>
-                      <h3 className="font-semibold mb-1">Advanced Analytics</h3>
-                      <p className="text-sm text-primary-100">Deep insights into your nutrition patterns</p>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    size="lg" 
-                    variant="secondary"
-                    onClick={handleUpgrade}
-                    className="bg-white text-primary-600 hover:bg-neutral-100"
-                  >
-                    Upgrade to Premium - $9.99/month
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
     </div>
   );
 }

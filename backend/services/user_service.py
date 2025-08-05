@@ -106,39 +106,6 @@ async def check_subscription_status(user: User, db: Session) -> Dict[str, Any]:
         "expires_at": subscription.end_date
     }
 
-async def check_freemium_limits(user: User, db: Session, action: str) -> Dict[str, Any]:
-    if user.role == UserRole.PREMIUM:
-        return {"allowed": True, "reason": None}
-    
-    if action == "meal_log":
-        from models.meal import Meal
-        today = datetime.utcnow().date()
-        today_meals = db.query(Meal).filter(
-            Meal.user_id == user.id,
-            Meal.logged_at >= datetime.combine(today, datetime.min.time()),
-            Meal.logged_at < datetime.combine(today + timedelta(days=1), datetime.min.time())
-        ).count()
-        
-        if today_meals >= 3:
-            return {
-                "allowed": False,
-                "reason": "Free users can log up to 3 meals per day. Upgrade to Premium for unlimited logging."
-            }
-    
-    elif action == "ai_chat":
-        return {
-            "allowed": False,
-            "reason": "AI coaching chat is a Premium feature. Upgrade to access personalized nutrition guidance."
-        }
-    
-    elif action == "full_history":
-        return {
-            "allowed": False,
-            "reason": "Full history access is a Premium feature. Free users can view the last 7 days."
-        }
-    
-    return {"allowed": True, "reason": None}
-
 async def get_user_streak(user: User, db: Session) -> int:
     from models.meal import Meal
     current_date = datetime.utcnow().date()
