@@ -1,6 +1,8 @@
 // Export all components from here for easy importing
 export * from './ui/Button';
 export * from './ui/Card';
+export * from './weight';
+export * from './forms';
 export * from './ui/Input';
 export * from './ui/Label';
 

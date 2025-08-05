@@ -30,15 +30,7 @@ def upgrade() -> None:
     sa.Column('subscription_end', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
-    op.create_table('feedback',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.UUID(), nullable=False),
-    sa.Column('message', sa.String(), nullable=False),
-    sa.Column('sent_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
+  
     op.create_index('ix_feedback_user_date', 'feedback', ['user_id', 'sent_at'], unique=False)
     op.create_index(op.f('ix_feedback_user_id'), 'feedback', ['user_id'], unique=False)
     op.create_table('meals',
@@ -124,9 +116,6 @@ def downgrade() -> None:
     op.drop_index('ix_meals_user_logged', table_name='meals')
     op.drop_index(op.f('ix_meals_user_id'), table_name='meals')
     op.drop_table('meals')
-    op.drop_index(op.f('ix_feedback_user_id'), table_name='feedback')
-    op.drop_index('ix_feedback_user_date', table_name='feedback')
-    op.drop_table('feedback')
-    op.drop_index(op.f('ix_users_email'), table_name='users')
+   
     op.drop_table('users')
     # ### end Alembic commands ###

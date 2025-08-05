@@ -1,20 +1,23 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useRouter } from 'next/navigation';
+import { GoImage } from 'react-icons/go';
+import { CiKeyboard } from 'react-icons/ci';
+import { IoArrowBack } from 'react-icons/io5';
 import { Button } from '@/components/ui/Button';
 import { mealsApi } from '@/lib/api';
 import type { PhotoAnalysisResponse } from '@/types';
 import { compressImage } from '@/lib/utils';
-import { LuScanLine } from 'react-icons/lu';
-import { GoImage } from 'react-icons/go';
 
 interface PhotoUploadProps {
   onAnalysisComplete: (analysis: PhotoAnalysisResponse) => void;
   onError: (error: string) => void;
+  onManualEntry: () => void;
 }
 
-export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
+export function PhotoUpload({ onAnalysisComplete, onError, onManualEntry }: PhotoUploadProps) {
+  const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -33,10 +36,7 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
     });
   };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
+  const processPhoto = useCallback(async (file: File) => {
     try {
       setAnalyzing(true);
 
@@ -73,15 +73,6 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
     }
   }, [onAnalysisComplete, onError]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
-    },
-    maxFiles: 1,
-    disabled: analyzing
-  });
-
   const handleCameraCapture = () => {
     // Trigger camera input
     const input = document.createElement('input');
@@ -91,88 +82,98 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        onDrop([file]);
+        processPhoto(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleGallerySelect = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        processPhoto(file);
       }
     };
     input.click();
   };
 
   return (
-    <div className="space-y-4">
-      {preview ? (
-        <div className="relative">
-          <img 
-            src={preview} 
-            alt="Meal preview" 
-            className="w-full h-64 object-cover rounded-lg"
-          />
-          {analyzing && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-              <div className="text-white text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2" />
-                <p className="text-sm">Analyzing meal...</p>
-              </div>
-            </div>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setPreview(null);
-              if (preview.startsWith('blob:')) {
-                URL.revokeObjectURL(preview);
-              }
-            }}
-            className="absolute top-2 right-2 bg-white"
-          >
-            ✕
-          </Button>
-        </div>
-      ) : (
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-            ${isDragActive 
-              ? 'border-primary-500 bg-primary-50' 
-              : 'border-neutral-300 hover:border-primary-400'
-            }
-            ${analyzing ? 'pointer-events-none opacity-50' : ''}
-          `}
-        >
-          <input {...getInputProps()} />
-          <div className="space-y-4">
-            <LuScanLine size={48} className="mx-auto text-neutral-600" />
-            <div>
-              <p className="text-lg font-medium text-neutral-900">
-                {isDragActive ? 'Drop your meal photo here' : 'Upload a meal photo'}
-              </p>
-              <p className="text-sm text-neutral-600">
-                Drag and drop or click to select
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="relative min-h-screen bg-black">
+      {/* Back Button */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg"
+      >
+        <IoArrowBack className="w-5 h-5 text-black" />
+      </button>
 
-      <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          onClick={handleCameraCapture}
-          disabled={analyzing}
-          className="flex-1 flex items-center gap-2"
-        >
-          <LuScanLine size={20} />
-          Camera
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-          disabled={analyzing}
-          className="flex-1 flex items-center gap-2"
-        >
-          <GoImage size={20} />
-          Gallery
-        </Button>
+      {/* Camera View Area */}
+      <div 
+        className="min-h-screen flex items-center justify-center cursor-pointer"
+        onClick={handleCameraCapture}
+      >
+        {preview ? (
+          <div className="relative w-full h-full">
+            <img 
+              src={preview} 
+              alt="Meal preview" 
+              className="w-full h-full object-cover"
+            />
+            {analyzing && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="text-white text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+                  <p className="text-lg">Analyzing meal...</p>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreview(null);
+                if (preview.startsWith('blob:')) {
+                  URL.revokeObjectURL(preview);
+                }
+              }}
+              className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg"
+            >
+              <span className="text-black text-xl">✕</span>
+            </button>
+          </div>
+        ) : (
+          <div className="text-center text-white">
+            <div className="text-8xl mb-4">📸</div>
+            <p className="text-xl mb-2">Tap to take photo</p>
+            <p className="text-gray-300">Point camera at your meal</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Action Buttons */}
+      <div className="absolute bottom-20 left-0 right-0 px-4">
+        <div className="flex justify-between">
+          {/* Gallery Button */}
+          <button
+            onClick={handleGallerySelect}
+            disabled={analyzing}
+            className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
+          >
+            <GoImage className="w-6 h-6 text-black" />
+          </button>
+
+          {/* Manual Entry Button */}
+          <button
+            onClick={onManualEntry}
+            disabled={analyzing}
+            className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
+          >
+            <CiKeyboard className="w-6 h-6 text-black" />
+          </button>
+        </div>
       </div>
     </div>
   );

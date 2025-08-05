@@ -1,120 +1,219 @@
-import useSWR from 'swr';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { usersApi } from '@/lib/api';
-import type { User, UserProfile, ProfileFormData } from '@/types';
+import type { User, UserProfile, ProfileFormData, ProfileUpdateFormData } from '@/types';
 
 export function useUser() {
-  const { data, error, mutate } = useSWR<User>(
-    'user',
-    async () => {
-      const response = await usersApi.getCurrentUser();
-      if (response.error) throw new Error(response.error);
-      return response.data!;
-    }
-  );
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const updateUser = async (userData: { email?: string }) => {
+  const fetchUser = async () => {
     try {
-      const response = await usersApi.updateCurrentUser(userData);
-      if (response.error) throw new Error(response.error);
-      mutate(response.data, false);
-      return response.data;
-    } catch (error) {
-      throw error;
+      setLoading(true);
+      setError(null);
+      const response = await usersApi.getCurrentUser();
+      
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setUser(response.data);
+      }
+    } catch (err) {
+      setError('Failed to fetch user');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const updateUser = async (data: { email?: string }) => {
+    try {
+      const response = await usersApi.updateCurrentUser(data);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      if (response.data) {
+        setUser(response.data);
+      }
+      
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update user';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   return {
-    user: data,
-    loading: !error && !data,
+    user,
+    loading,
     error,
-    mutate,
     updateUser,
+    refetch: fetchUser,
   };
 }
 
 export function useUserProfile() {
-  const { data, error, mutate } = useSWR<UserProfile | null>(
-    'user-profile',
-    async () => {
-      const response = await usersApi.getUserProfile();
-      if (response.error) {
-        if (response.status === 404) return null;
-        throw new Error(response.error);
-      }
-      return response.data!;
-    }
-  );
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const updateProfile = async (profileData: Partial<ProfileFormData>) => {
+  const fetchProfile = async () => {
     try {
-      const response = await usersApi.updateUserProfile(profileData);
-      if (response.error) throw new Error(response.error);
-      mutate(response.data, false);
-      return response.data;
-    } catch (error) {
-      throw error;
+      setLoading(true);
+      setError(null);
+      const response = await usersApi.getUserProfile();
+      
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setProfile(response.data);
+      }
+    } catch (err) {
+      setError('Failed to fetch profile');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const createProfile = async (data: ProfileFormData) => {
+    try {
+      const response = await usersApi.createUserProfile(data);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      if (response.data) {
+        setProfile(response.data);
+      }
+      
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create profile';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const updateProfile = async (data: ProfileUpdateFormData) => {
+    try {
+      const response = await usersApi.updateUserProfile(data);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      if (response.data) {
+        setProfile(response.data);
+      }
+      
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
   return {
-    profile: data,
-    loading: !error && data === undefined,
-    error: error && error.message !== 'User profile not found' ? error : null,
-    mutate,
+    profile,
+    loading,
+    error,
+    createProfile,
     updateProfile,
+    refetch: fetchProfile,
   };
 }
 
 export function useUserGoals() {
-  const { data, error, mutate } = useSWR(
-    'user-goals',
-    async () => {
+  const [goals, setGoals] = useState<{
+    bmr: number;
+    tdee: number;
+    calorie_goal: number;
+    target_weight: number;
+    initial_weight: number;
+    current_weight: number;
+    water_goal: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchGoals = async () => {
+    try {
+      setLoading(true);
+      setError(null);
       const response = await usersApi.getUserGoals();
-      if (response.error) throw new Error(response.error);
-      return response.data!;
+      
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setGoals(response.data);
+      }
+    } catch (err) {
+      setError('Failed to fetch goals');
+    } finally {
+      setLoading(false);
     }
-  );
-
-  return {
-    goals: data,
-    loading: !error && !data,
-    error,
-    mutate,
   };
-}
 
-export function useSubscription() {
-  const { data, error, mutate } = useSWR(
-    'subscription',
-    async () => {
-      const response = await usersApi.getSubscriptionInfo();
-      if (response.error) throw new Error(response.error);
-      return response.data!;
-    }
-  );
+  useEffect(() => {
+    fetchGoals();
+  }, []);
 
   return {
-    subscription: data,
-    loading: !error && !data,
+    goals,
+    loading,
     error,
-    mutate,
+    refetch: fetchGoals,
   };
 }
 
 export function useUserStreak() {
-  const { data, error, mutate } = useSWR(
-    'user-streak',
-    async () => {
+  const [streak, setStreak] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStreak = async () => {
+    try {
+      setLoading(true);
+      setError(null);
       const response = await usersApi.getUserStreak();
-      if (response.error) throw new Error(response.error);
-      return response.data!;
+      
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setStreak(response.data.streak);
+      }
+    } catch (err) {
+      setError('Failed to fetch streak');
+    } finally {
+      setLoading(false);
     }
-  );
+  };
+
+  useEffect(() => {
+    fetchStreak();
+  }, []);
 
   return {
-    streak: data?.streak || 0,
-    loading: !error && !data,
+    streak,
+    loading,
     error,
-    mutate,
+    refetch: fetchStreak,
   };
 }

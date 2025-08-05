@@ -1,16 +1,14 @@
-from .user import Base, User, UserProfile, Subscription, WeightLog, Feedback, UserRole, ActivityLevel, GoalType, Gender, TimeFrame
+from .user import Base, User, UserProfile, Subscription, WeightLog, UserFeedback, UserRole, ActivityLevel, GoalType, Gender, TimeFrame
 from .meal import Meal
 from .database import engine, SessionLocal, get_db
-
 __all__ = [
     "Base",
     "User", 
     "UserProfile",
     "Meal",
-    "Feedback",
     "Subscription",
     "WeightLog",
-    "Feedback",
+    "UserFeedback",
     "UserRole",
     "ActivityLevel", 
     "GoalType",

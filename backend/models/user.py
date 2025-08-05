@@ -57,7 +57,7 @@ class User(Base):
     meals = relationship("Meal", back_populates="user", cascade="all, delete-orphan")
     subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
     weight_logs = relationship("WeightLog", back_populates="user", cascade="all, delete-orphan")
-    feedback = relationship("Feedback", back_populates="user", cascade="all, delete-orphan")
+    user_feedback = relationship("UserFeedback", back_populates="user", cascade="all, delete-orphan")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -132,17 +132,17 @@ class Subscription(Base):
     
     user = relationship("User", back_populates="subscription")
 
-class Feedback(Base):
-    __tablename__ = "feedback"
+class UserFeedback(Base):
+    __tablename__ = "user_feedback"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)  # Allow anonymous feedback
     message = Column(String, nullable=False)  # The feedback message content
     sent_at = Column(DateTime, nullable=False, default=datetime.utcnow)  # When the feedback was sent
     
-    user = relationship("User", back_populates="feedback")
+    user = relationship("User", back_populates="user_feedback")
     
     # Create index for efficient querying by user and date
     __table_args__ = (
-        Index('ix_feedback_user_date', 'user_id', 'sent_at'),
+        Index('ix_user_feedback_user_date', 'user_id', 'sent_at'),
     )

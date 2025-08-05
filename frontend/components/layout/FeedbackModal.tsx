@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { usersApi } from '@/lib/api/users';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -45,18 +46,11 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: getUserEmail(),
-          feedback: feedback.trim(),
-        }),
+      const response = await usersApi.createUserFeedback({
+        message: feedback.trim(),
       });
 
-      if (response.ok) {
+      if (response.data) {
         setIsSubmitted(true);
         setFeedback('');
         setTimeout(() => {
@@ -64,7 +58,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
           onClose();
         }, 2000);
       } else {
-        console.error('Failed to submit feedback');
+        console.error('Failed to submit feedback:', response.error);
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);

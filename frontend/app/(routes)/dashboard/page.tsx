@@ -8,10 +8,13 @@ import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
 import { MealTimeline } from '@/components/dashboard/MealTimeline';
 import { DailyTipCard } from '@/components/dashboard/DailyTipCard';
 import { NutritionCircles } from '@/components/dashboard/NutritionCircles';
+import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { WeightEntryForm, WeightStats } from '@/components/weight';
 import { useTodaysProgress } from '@/hooks/useProgress';
 import { useTodaysMeals } from '@/hooks/useMeals';
-import { useUserStreak } from '@/hooks/useUser';
+import { useUserStreak, useUserProfile, useUserGoals } from '@/hooks/useUser';
 import { useAuthContext } from '@/components/auth/AuthProvider';
 
 function DashboardContent() {
@@ -20,6 +23,8 @@ function DashboardContent() {
   const { progress, loading: progressLoading } = useTodaysProgress();
   const { meals, loading: mealsLoading } = useTodaysMeals();
   const { streak, loading: streakLoading } = useUserStreak();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { goals, loading: goalsLoading } = useUserGoals();
 
   const handleAddMeal = () => {
     router.push('/dashboard/add-meal');
@@ -30,7 +35,7 @@ function DashboardContent() {
     router.push('/');
   };
 
-  if (progressLoading || mealsLoading || streakLoading) {
+  if (progressLoading || mealsLoading || streakLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900" />
@@ -40,6 +45,30 @@ function DashboardContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#f9f9fa] min-h-screen">
+        {/* Welcome Section */}
+        {profile && (
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome back! 👋
+            </h1>
+            <p className="text-gray-600">
+              Let's track your nutrition journey today
+            </p>
+          </div>
+        )}
+
+        {/* Stats Overview */}
+        {progress && !goalsLoading && (
+          <div className="mb-8">
+            <StatsOverview 
+              progress={progress}
+              streak={streak}
+              profile={profile}
+              goals={goals}
+            />
+          </div>
+        )}
+
         {/* Nutrition Circles */}
         <div className="mb-8">
           <NutritionCircles 
@@ -57,14 +86,63 @@ function DashboardContent() {
         </div>
 
         {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Meals and Tips */}
-          <div className="space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <MealTimeline 
               meals={meals} 
               onAddMeal={handleAddMeal}
             />
             <DailyTipCard />
+          </div>
+
+          {/* Side Panel */}
+          <div className="space-y-6">
+            {/* Quick Weight Entry */}
+            <WeightEntryForm showAsCard={true} />
+            
+            {/* Weight Stats */}
+            <WeightStats />
+
+            {/* Profile Summary */}
+            {profile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Profile</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-sm space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Goal:</span>
+                      <span className="font-medium">
+                        {profile.goal === 'weight_loss' ? 'Weight Loss' :
+                         profile.goal === 'muscle_gain' ? 'Muscle Gain' :
+                         profile.goal === 'maintain' ? 'Maintain' : 'Body Recomposition'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Current:</span>
+                      <span className="font-medium">{profile.current_weight} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Target:</span>
+                      <span className="font-medium">{profile.target_weight} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Water Goal:</span>
+                      <span className="font-medium">{profile.water_goal / 1000}L</span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm"
+                    onClick={() => router.push('/dashboard/profile')}
+                  >
+                    Update Profile
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 

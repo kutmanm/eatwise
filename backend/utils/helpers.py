@@ -51,9 +51,11 @@ def calculate_bmr(age: int, height: float, weight: float, is_male: bool = True) 
 
 def calculate_tdee(bmr: float, activity_level: ActivityLevel) -> float:
     multipliers = {
-        ActivityLevel.LOW: 1.2,
-        ActivityLevel.MEDIUM: 1.55,
-        ActivityLevel.HIGH: 1.9
+        ActivityLevel.SEDENTARY: 1.2,
+        ActivityLevel.LIGHTLY_ACTIVE: 1.375,
+        ActivityLevel.MODERATELY_ACTIVE: 1.55,
+        ActivityLevel.VERY_ACTIVE: 1.725,
+        ActivityLevel.EXTREMELY_ACTIVE: 1.9
     }
     return bmr * multipliers[activity_level]
 
