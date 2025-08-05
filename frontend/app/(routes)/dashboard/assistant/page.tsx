@@ -1,5 +1,6 @@
 'use client';
 
+import { RiRobot2Fill } from 'react-icons/ri';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
@@ -10,7 +11,7 @@ function AssistantContent() {
       <div className="text-center">
         <div className="mb-8">
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <span className="text-4xl">🤖</span>
+            <RiRobot2Fill className="text-4xl text-gray-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">AI Assistant</h1>
           <p className="text-xl text-gray-600">Coming Soon</p>
