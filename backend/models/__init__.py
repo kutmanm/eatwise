@@ -1,6 +1,6 @@
-from .user import Base, User, UserProfile, Subscription, UserRole, ActivityLevel, GoalType
+from .user import Base, User, UserProfile, Subscription, WeightLog, Feedback, UserRole, ActivityLevel, GoalType, Gender, TimeFrame
 from .meal import Meal
-from .database import engine, SessionLocal, get_db, create_tables
+from .database import engine, SessionLocal, get_db
 
 __all__ = [
     "Base",
@@ -8,11 +8,14 @@ __all__ = [
     "UserProfile",
     "Meal",
     "Subscription",
+    "WeightLog",
+    "Feedback",
     "UserRole",
     "ActivityLevel", 
     "GoalType",
+    "Gender",
+    "TimeFrame",
     "engine",
     "SessionLocal",
-    "get_db",
-    "create_tables"
+    "get_db"
 ]
