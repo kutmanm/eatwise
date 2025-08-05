@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { mealsApi } from '@/lib/api';
 import type { PhotoAnalysisResponse } from '@/types';
 import { compressImage } from '@/lib/utils';
+import { LuScanLine } from 'react-icons/lu';
+import { GoImage } from 'react-icons/go';
 
 interface PhotoUploadProps {
   onAnalysisComplete: (analysis: PhotoAnalysisResponse) => void;
@@ -139,7 +141,7 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
         >
           <input {...getInputProps()} />
           <div className="space-y-4">
-            <div className="text-4xl">📸</div>
+            <LuScanLine size={48} className="mx-auto text-neutral-600" />
             <div>
               <p className="text-lg font-medium text-neutral-900">
                 {isDragActive ? 'Drop your meal photo here' : 'Upload a meal photo'}
@@ -157,17 +159,19 @@ export function PhotoUpload({ onAnalysisComplete, onError }: PhotoUploadProps) {
           variant="outline"
           onClick={handleCameraCapture}
           disabled={analyzing}
-          className="flex-1"
+          className="flex-1 flex items-center gap-2"
         >
-          📷 Camera
+          <LuScanLine size={20} />
+          Camera
         </Button>
         <Button
           variant="outline"
           onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
           disabled={analyzing}
-          className="flex-1"
+          className="flex-1 flex items-center gap-2"
         >
-          📁 Gallery
+          <GoImage size={20} />
+          Gallery
         </Button>
       </div>
     </div>

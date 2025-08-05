@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -10,18 +10,23 @@ import { Button } from '@/components/ui/Button';
 import { PhotoUpload } from '@/components/meal/PhotoUpload';
 import { TextEntry } from '@/components/meal/TextEntry';
 import { NutritionEditor } from '@/components/meal/NutritionEditor';
+import { CameraCapture } from '@/components/mobile/CameraCapture';
 import { mealsApi } from '@/lib/api';
 import { useMealFeedback } from '@/hooks/useAI';
 import type { MealFormData, PhotoAnalysisResponse, ChatLogResponse } from '@/types';
+import { GoImage } from 'react-icons/go';
+import { FaRegKeyboard } from 'react-icons/fa';
+import { IoArrowBack } from 'react-icons/io5';
 
-type EntryMethod = 'photo' | 'text' | 'manual';
+type EntryMethod = 'camera' | 'text';
 
 function AddMealContent() {
   const router = useRouter();
-  const [entryMethod, setEntryMethod] = useState<EntryMethod | null>(null);
+  const [entryMethod, setEntryMethod] = useState<EntryMethod>('camera');
   const [analysisResult, setAnalysisResult] = useState<(PhotoAnalysisResponse | ChatLogResponse) | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<Blob | null>(null);
   const { feedback, getFeedback, loading: feedbackLoading } = useMealFeedback();
 
   const handleAnalysisComplete = (result: PhotoAnalysisResponse | ChatLogResponse) => {
@@ -62,6 +67,86 @@ function AddMealContent() {
     router.push('/dashboard');
   };
 
+  const handleCameraCapture = async (imageBlob: Blob) => {
+    setCapturedImage(imageBlob);
+    
+    try {
+      setError('');
+      
+      // Convert blob to base64 for API
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Image = reader.result as string;
+        
+        try {
+          const response = await mealsApi.analyzePhoto(base64Image);
+          
+          if (response.error) {
+            setError(response.error);
+          } else if (response.data) {
+            handleAnalysisComplete(response.data);
+          }
+        } catch (err) {
+          setError('Failed to analyze image. Please try again.');
+        }
+      };
+      reader.readAsDataURL(imageBlob);
+    } catch (err) {
+      setError('Failed to process image. Please try again.');
+    }
+  };
+
+  const handleCameraError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
+  const handleGalleryUpload = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          setError('');
+          
+          // Convert blob to base64 for API
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64Image = reader.result as string;
+            
+            try {
+              const response = await mealsApi.analyzePhoto(base64Image);
+              
+              if (response.error) {
+                setError(response.error);
+              } else if (response.data) {
+                handleAnalysisComplete(response.data);
+              }
+            } catch (err) {
+              setError('Failed to analyze image. Please try again.');
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          setError('Failed to process image. Please try again.');
+        }
+      }
+    };
+    input.click();
+  };
+
+  const handleTextEntry = () => {
+    setEntryMethod('text');
+  };
+
+  const handleBackToCamera = () => {
+    setEntryMethod('camera');
+    setCapturedImage(null);
+    setAnalysisResult(null);
+    setError('');
+  };
+
   const getInitialMealData = (): Partial<MealFormData> => {
     if (!analysisResult) return {};
     
@@ -82,131 +167,106 @@ function AddMealContent() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="mb-6 rounded-md bg-error/10 p-4">
-            <p className="text-sm text-error">{error}</p>
-          </div>
-        )}
+    <div className="h-screen w-screen fixed inset-0 bg-black overflow-hidden">
+      {/* Back Button in NavBar will be handled by AppLayout */}
 
-        {/* Success message with feedback */}
-        {feedback && (
-          <div className="mb-6 rounded-md bg-primary-50 p-4">
-            <h3 className="text-sm font-medium text-primary-800 mb-2">
-              🎉 Meal saved successfully!
-            </h3>
-            <p className="text-sm text-primary-700">{feedback}</p>
-            <p className="text-xs text-primary-600 mt-2">
-              Redirecting to dashboard...
-            </p>
-          </div>
-        )}
-
-        {!entryMethod ? (
-          /* Method Selection */
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-                How would you like to log your meal?
-              </h2>
-              <p className="text-neutral-600">
-                Choose the method that works best for you
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setEntryMethod('photo')}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-4">📸</div>
-                  <h3 className="font-semibold text-neutral-900 mb-2">Photo</h3>
-                  <p className="text-sm text-neutral-600">
-                    Take or upload a photo for AI analysis
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setEntryMethod('text')}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-4">✍️</div>
-                  <h3 className="font-semibold text-neutral-900 mb-2">Text</h3>
-                  <p className="text-sm text-neutral-600">
-                    Describe your meal in words
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setEntryMethod('manual')}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-4">⌨️</div>
-                  <h3 className="font-semibold text-neutral-900 mb-2">Manual</h3>
-                  <p className="text-sm text-neutral-600">
-                    Enter nutrition information manually
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        ) : analysisResult || entryMethod === 'manual' ? (
-          /* Nutrition Editor */
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {analysisResult && 'confidence' in analysisResult && (
-                  <div className="flex items-center justify-between">
-                    <span>Review & Edit Meal</span>
-                    <span className="text-sm text-neutral-600">
-                      Confidence: {Math.round((analysisResult.confidence || 0) * 100)}%
-                    </span>
-                  </div>
-                )}
-                {!analysisResult && 'Enter Meal Information'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <NutritionEditor
-                initialData={getInitialMealData()}
-                onSave={handleSaveMeal}
-                onCancel={handleCancel}
-                loading={saving || feedbackLoading}
-              />
+      {/* Success Message */}
+      {feedback && (
+        <div className="absolute top-16 left-4 right-4 z-40">
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-green-600 text-4xl mb-3">✅</div>
+                <h3 className="text-lg font-semibold text-green-800 mb-2">Meal Saved Successfully!</h3>
+                <p className="text-green-700 mb-4">{feedback}</p>
+                <p className="text-xs text-green-600 mt-2">
+                  Redirecting to dashboard...
+                </p>
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          /* Entry Method Content */
-          <div className="max-w-2xl mx-auto">
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="absolute top-16 left-4 right-4 z-40">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-800">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      {analysisResult ? (
+        /* Nutrition Editor */
+        <div className="h-full pt-16 pb-24 px-4 overflow-y-auto bg-white">
+          <div className="max-w-4xl mx-auto">
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {entryMethod === 'photo' && 'Upload Meal Photo'}
-                  {entryMethod === 'text' && 'Describe Your Meal'}
+                  {analysisResult && 'confidence' in analysisResult && (
+                    <div className="flex items-center justify-between">
+                      <span>Review & Edit Meal</span>
+                      <span className="text-sm text-neutral-600">
+                        Confidence: {Math.round((analysisResult.confidence || 0) * 100)}%
+                      </span>
+                    </div>
+                  )}
+                  {!analysisResult && 'Enter Meal Information'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {entryMethod === 'photo' && (
-                  <PhotoUpload
-                    onAnalysisComplete={handleAnalysisComplete}
-                    onError={handleError}
-                  />
-                )}
-                {entryMethod === 'text' && (
-                  <TextEntry
-                    onAnalysisComplete={handleAnalysisComplete}
-                    onError={handleError}
-                  />
-                )}
+                <NutritionEditor
+                  initialData={getInitialMealData()}
+                  onSave={handleSaveMeal}
+                  onCancel={handleBackToCamera}
+                  loading={saving || feedbackLoading}
+                />
               </CardContent>
             </Card>
           </div>
-        )}
+        </div>
+      ) : (
+        /* Camera/Entry Method Content */
+        <div className="h-full">
+          {entryMethod === 'camera' && (
+            <CameraCapture
+              onCapture={handleCameraCapture}
+              onError={handleCameraError}
+            />
+          )}
+          {entryMethod === 'text' && (
+            <div className="h-full pt-16 pb-24 px-4 bg-white overflow-y-auto">
+              <TextEntry
+                onAnalysisComplete={handleAnalysisComplete}
+                onError={handleError}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Floating Action Buttons */}
+      {!analysisResult && (
+        <div className="fixed bottom-24 left-0 right-0 flex justify-between px-6 z-50">
+          {/* Gallery Button - Bottom Left */}
+          <button
+            onClick={handleGalleryUpload}
+            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center"
+          >
+            <GoImage size={24} className="text-gray-700" />
+          </button>
+
+          {/* Text Entry Button - Bottom Right */}
+          <button
+            onClick={handleTextEntry}
+            className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center"
+          >
+            <FaRegKeyboard size={24} className="text-gray-700" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
