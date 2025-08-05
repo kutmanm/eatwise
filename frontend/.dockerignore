@@ -38,7 +38,7 @@ Thumbs.db
 
 # Logs
 *.log
-
+.env
 # Misc
 README.md
 TESTING.md

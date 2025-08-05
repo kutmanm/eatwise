@@ -14,8 +14,13 @@ STRIPE_PRICE_IDS = {
     "premium_monthly": "price_premium_monthly",
     "premium_yearly": "price_premium_yearly"
 }
-
-async def create_checkout_session(user: User, plan: str, success_url: str, cancel_url: str) -> Dict[str, str]:
+async def create_checkout_session(
+    user: User, 
+    plan: str, 
+    success_url: str, 
+    cancel_url: str,
+    promo_code_str: Optional[str] = None  # New optional param
+) -> Dict[str, str]:
     try:
         price_id = STRIPE_PRICE_IDS.get(plan)
         if not price_id:
@@ -23,6 +28,18 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid subscription plan"
             )
+
+        discounts = None
+        if promo_code_str:
+            # Look up promo code ID from Stripe by user-entered code
+            promo_codes = stripe.PromotionCode.list(code=promo_code_str, active=True, limit=1)
+            if not promo_codes.data:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid or expired promo code"
+                )
+            promo_code_id = promo_codes.data[0].id
+            discounts = [{"promotion_code": promo_code_id}]
         
         session = stripe.checkout.Session.create(
             customer_email=user.email,
@@ -32,6 +49,7 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
                 "quantity": 1,
             }],
             mode="subscription",
+            discounts=discounts,  # Apply discounts if any
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={
@@ -50,6 +68,7 @@ async def create_checkout_session(user: User, plan: str, success_url: str, cance
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Stripe error: {str(e)}"
         )
+
 
 async def handle_webhook_event(event_data: Dict[str, Any], signature: str, db: Session) -> bool:
     try:
@@ -167,7 +186,7 @@ def get_subscription_plans() -> Dict[str, Any]:
         },
         "premium_yearly": {
             "name": "Premium Yearly",
-            "price": 99.99,
+            "price": 167.88,
             "currency": "usd",
             "interval": "year",
             "features": [
