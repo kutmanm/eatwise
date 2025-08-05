@@ -37,8 +37,6 @@ function ProfileContent() {
       age: profile?.age || 25,
       height: profile?.height || 170,
       weight: profile?.weight || 70,
-      target_weight: profile?.target_weight,
-      timeframe_days: profile?.timeframe_days,
       activity_level: profile?.activity_level || 'medium',
       goal: profile?.goal || 'maintain',
     }
@@ -216,33 +214,6 @@ function ProfileContent() {
                       )}
                     </div>
                   </div>
-
-                  {/* Goal Details */}
-                  {(watchedValues.goal === 'weight_loss' || watchedValues.goal === 'muscle_gain') && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="target_weight">Target Weight (kg)</Label>
-                        <Input
-                          id="target_weight"
-                          type="number"
-                          placeholder="65"
-                          error={errors.target_weight?.message}
-                          {...register('target_weight', { valueAsNumber: true })}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="timeframe_days">Timeframe (days)</Label>
-                        <Input
-                          id="timeframe_days"
-                          type="number"
-                          placeholder="90"
-                          error={errors.timeframe_days?.message}
-                          {...register('timeframe_days', { valueAsNumber: true })}
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   <Button
                     type="submit"

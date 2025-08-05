@@ -7,7 +7,7 @@ from services.auth_service import get_current_user
 from services.user_service import (
     get_user_profile, create_user_profile, update_user_profile, 
     calculate_user_goals, update_user_email, get_user_subscription,
-    check_subscription_status, get_user_streak, calculate_goal_achievement
+    check_subscription_status, get_user_streak
 )
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -77,21 +77,9 @@ async def get_user_goals(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User profile not found"
         )
-    return await calculate_user_goals(profile)
-
-@router.get("/goal-achievement")
-async def get_goal_achievement(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Получить данные о прогрессе достижения цели для Goal Achievement диаграммы"""
-    profile = await get_user_profile(current_user, db)
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User profile not found"
-        )
-    return await calculate_goal_achievement(profile)
+    
+    goals = await calculate_user_goals(profile)
+    return goals
 
 @router.get("/subscription")
 async def get_subscription_info(
