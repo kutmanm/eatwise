@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .user import Base
 from .meal import Meal
+from .feedback import Feedback
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/eatwise")

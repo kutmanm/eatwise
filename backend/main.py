@@ -4,6 +4,7 @@ from api.users.routes import router as users_router
 from api.meals.routes import router as meals_router
 from api.progress.routes import router as progress_router
 from api.ai.routes import router as ai_router
+from api.feedback.routes import router as feedback_router
 from utils.config import settings
 from models.database import create_tables
 
@@ -30,6 +31,7 @@ app.include_router(users_router)
 app.include_router(meals_router)
 app.include_router(progress_router)
 app.include_router(ai_router)
+app.include_router(feedback_router)
 
 @app.get("/")
 def read_root():

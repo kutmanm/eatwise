@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { BottomNavBar } from '@/components/mobile/BottomNavBar';
+import { SettingsDropdown } from '@/components/layout/SettingsDropdown';
 import { IoArrowBack } from 'react-icons/io5';
 
 interface AppLayoutProps {
@@ -17,6 +18,9 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   if (pathname === '/') {
     return <>{children}</>;
   }
+
+  // Check if we're on a dashboard page
+  const isDashboardPage = pathname.startsWith('/dashboard');
 
   // Special handling for scan page - full screen layout
   if (pathname.includes('/dashboard/add-meal')) {
@@ -64,8 +68,10 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
       {/* Simple Header */}
       <header className="bg-white border-none sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-16">
+          <div className="flex justify-between items-center h-16">
+            <div className="w-10"></div> {/* Spacer for centering */}
             <h2 className="text-lg font-medium text-gray-900">{getPageTitle()}</h2>
+            {isDashboardPage ? <SettingsDropdown /> : <div className="w-10"></div>}
           </div>
         </div>
       </header>
