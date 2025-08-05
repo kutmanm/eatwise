@@ -54,6 +54,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     
     if (pathname.includes('/dashboard/add-meal')) return 'Scan';
     if (pathname.includes('/dashboard/assistant')) return 'Assistant';
+    if (pathname.includes('/dashboard/settings')) return 'Settings';
     if (pathname.includes('/dashboard/profile')) return 'Plan';
     if (pathname.includes('/dashboard/history')) return 'Food log';
     if (pathname.includes('/dashboard/progress')) return 'Progress';

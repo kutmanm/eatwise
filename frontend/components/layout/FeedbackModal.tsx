@@ -110,11 +110,9 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
         ) : (
           <>
             <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Give Feedback
-              </h3>
-              <p className="text-sm text-gray-600">
-                Help us improve EatWise by sharing your thoughts and suggestions.
+
+              <p className="text-sm text-gray-600 text-center">
+              Help us get better!
               </p>
             </div>
 
@@ -123,7 +121,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 <textarea
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
-                  placeholder="Share your feedback, suggestions, or report any issues..."
+                  placeholder="Share your thoughts..."
                   className="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                   disabled={isSubmitting}
                 />
