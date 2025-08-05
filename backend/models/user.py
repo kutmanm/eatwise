@@ -42,6 +42,8 @@ class UserProfile(Base):
     age = Column(Integer, nullable=False)
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
+    target_weight = Column(Float, nullable=True)  # Целевой вес
+    timeframe_days = Column(Integer, nullable=True)  # Временной фрейм в днях
     activity_level = Column(Enum(ActivityLevel), nullable=False)
     goal = Column(Enum(GoalType), nullable=False)
     

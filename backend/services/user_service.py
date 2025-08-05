@@ -42,10 +42,25 @@ async def calculate_user_goals(profile: UserProfile) -> Dict[str, float]:
     calorie_goal = calculate_calorie_goal(profile.weight, profile.goal, tdee)
     macro_targets = calculate_macro_targets(calorie_goal, profile.goal)
     
+    # Расчет прогресса к целевому весу
+    weight_progress = 0.0
+    if profile.target_weight:
+        if profile.goal.value == "weight_loss":
+            total_to_lose = profile.weight - profile.target_weight
+            weight_progress = max(0.0, min(100.0, 0.0))  # Начальный прогресс 0%
+        elif profile.goal.value == "muscle_gain":
+            total_to_gain = profile.target_weight - profile.weight
+            weight_progress = max(0.0, min(100.0, 0.0))  # Начальный прогресс 0%
+        else:  # maintain
+            weight_progress = 100.0 if abs(profile.weight - profile.target_weight) <= 1.0 else 0.0
+    
     return {
         "bmr": bmr,
         "tdee": tdee,
         "calorie_goal": calorie_goal,
+        "target_weight": profile.target_weight,
+        "timeframe_days": profile.timeframe_days,
+        "weight_progress": weight_progress,
         **macro_targets
     }
 
@@ -131,3 +146,52 @@ async def update_user_email(user: User, new_email: str, db: Session) -> User:
     db.commit()
     db.refresh(user)
     return user
+
+async def calculate_goal_achievement(profile: UserProfile) -> Dict[str, Any]:
+    """Рассчитывает прогресс достижения цели для Goal Achievement диаграммы"""
+    if not profile.target_weight or not profile.timeframe_days:
+        return {
+            "progress_percentage": 0.0,
+            "days_remaining": 0,
+            "weight_to_go": 0.0,
+            "on_track": False,
+            "daily_weight_change_needed": 0.0
+        }
+    
+    current_weight = profile.weight
+    target_weight = profile.target_weight
+    
+    # Расчет прогресса
+    if profile.goal.value == "weight_loss":
+        total_weight_change = current_weight - target_weight
+        current_progress = 0.0  # Начальный прогресс
+        weight_to_go = abs(current_weight - target_weight)
+    elif profile.goal.value == "muscle_gain":
+        total_weight_change = target_weight - current_weight
+        current_progress = 0.0  # Начальный прогресс
+        weight_to_go = abs(target_weight - current_weight)
+    else:  # maintain
+        return {
+            "progress_percentage": 100.0 if abs(current_weight - target_weight) <= 1.0 else 0.0,
+            "days_remaining": profile.timeframe_days,
+            "weight_to_go": abs(current_weight - target_weight),
+            "on_track": abs(current_weight - target_weight) <= 1.0,
+            "daily_weight_change_needed": 0.0
+        }
+    
+    progress_percentage = max(0.0, min(100.0, current_progress))
+    daily_weight_change_needed = weight_to_go / profile.timeframe_days if profile.timeframe_days > 0 else 0.0
+    
+    # Определяем, на правильном ли пути пользователь
+    # Пока что считаем что все на правильном пути (это можно улучшить с историей весов)
+    on_track = True
+    
+    return {
+        "progress_percentage": progress_percentage,
+        "days_remaining": profile.timeframe_days,
+        "weight_to_go": weight_to_go,
+        "on_track": on_track,
+        "daily_weight_change_needed": daily_weight_change_needed,
+        "target_weight": target_weight,
+        "current_weight": current_weight
+    }

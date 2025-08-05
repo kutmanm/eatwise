@@ -8,6 +8,8 @@ class UserProfileBase(BaseModel):
     age: int = Field(ge=1, le=120)
     height: float = Field(ge=50, le=300)
     weight: float = Field(ge=20, le=500)
+    target_weight: Optional[float] = Field(None, ge=20, le=500)
+    timeframe_days: Optional[int] = Field(None, ge=1, le=3650)  # От 1 дня до 10 лет
     activity_level: ActivityLevel
     goal: GoalType
 
@@ -18,6 +20,8 @@ class UserProfileUpdate(BaseModel):
     age: Optional[int] = Field(None, ge=1, le=120)
     height: Optional[float] = Field(None, ge=50, le=300)
     weight: Optional[float] = Field(None, ge=20, le=500)
+    target_weight: Optional[float] = Field(None, ge=20, le=500)
+    timeframe_days: Optional[int] = Field(None, ge=1, le=3650)
     activity_level: Optional[ActivityLevel] = None
     goal: Optional[GoalType] = None
 

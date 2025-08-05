@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { User, UserProfile, ProfileFormData } from '@/types';
+import type { User, UserProfile, ProfileFormData, GoalAchievementData } from '@/types';
 
 export const usersApi = {
   getCurrentUser: () => 
@@ -22,10 +22,16 @@ export const usersApi = {
       bmr: number;
       tdee: number;
       calorie_goal: number;
+      target_weight?: number;
+      timeframe_days?: number;
+      weight_progress: number;
       protein: number;
       carbs: number;
       fat: number;
     }>('/api/users/goals'),
+
+  getGoalAchievement: () =>
+    apiClient.get<GoalAchievementData>('/api/users/goal-achievement'),
 
   getSubscriptionInfo: () =>
     apiClient.get<{

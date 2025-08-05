@@ -16,13 +16,14 @@ export interface UserProfile {
   age: number;
   height: number;
   weight: number;
+  target_weight?: number;
+  timeframe_days?: number;
   activity_level: ActivityLevel;
   goal: GoalType;
   calorie_goal?: number;
   protein_goal?: number;
   carbs_goal?: number;
   fat_goal?: number;
-  goal_weight?: number;
 }
 
 export interface Meal {
@@ -105,4 +106,14 @@ export interface ChatLogResponse {
   fiber?: number;
   water?: number;
   confidence: number;
+}
+
+export interface GoalAchievementData {
+  progress_percentage: number;
+  days_remaining: number;
+  weight_to_go: number;
+  on_track: boolean;
+  daily_weight_change_needed: number;
+  target_weight?: number;
+  current_weight: number;
 }

@@ -207,6 +207,39 @@ export default function OnboardingPage() {
                   <p className="text-sm text-error">{errors.goal.message}</p>
                 )}
               </div>
+
+              {/* Goal-specific fields */}
+              {(watchedValues.goal === 'weight_loss' || watchedValues.goal === 'muscle_gain') && (
+                <div>
+                  <Label htmlFor="target_weight">Target Weight (kg) (Optional)</Label>
+                  <Input
+                    id="target_weight"
+                    type="number"
+                    placeholder="65"
+                    error={errors.target_weight?.message}
+                    {...register('target_weight', { valueAsNumber: true })}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">
+                    What weight would you like to reach?
+                  </p>
+                </div>
+              )}
+
+              {(watchedValues.goal === 'weight_loss' || watchedValues.goal === 'muscle_gain') && watchedValues.target_weight && (
+                <div>
+                  <Label htmlFor="timeframe_days">Timeframe (days) (Optional)</Label>
+                  <Input
+                    id="timeframe_days"
+                    type="number"
+                    placeholder="90"
+                    error={errors.timeframe_days?.message}
+                    {...register('timeframe_days', { valueAsNumber: true })}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">
+                    How many days do you want to achieve this goal? (e.g., 30, 90, 180)
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -241,6 +274,18 @@ export default function OnboardingPage() {
                     <span className="text-neutral-600">Goal:</span>
                     <span className="font-medium">{getGoalLabel(watchedValues.goal || '')}</span>
                   </div>
+                  {watchedValues.target_weight && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Target Weight:</span>
+                      <span className="font-medium">{watchedValues.target_weight} kg</span>
+                    </div>
+                  )}
+                  {watchedValues.timeframe_days && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Timeframe:</span>
+                      <span className="font-medium">{watchedValues.timeframe_days} days</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
