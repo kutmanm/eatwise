@@ -4,7 +4,15 @@ from api.users.routes import router as users_router
 from api.meals.routes import router as meals_router
 from api.progress.routes import router as progress_router
 from api.ai.routes import router as ai_router
-from api.subsciption.routes import router as subscription_router
+try:
+    from api.subsciption.routes import router as subscription_router
+except ImportError:
+    # Create a placeholder router if module not found
+    import logging
+    from fastapi import APIRouter
+    logger = logging.getLogger(__name__)
+    logger.warning("Could not import subscription router, using placeholder")
+    subscription_router = APIRouter(prefix="/subscription", tags=["subscription"])
 from api.weight_logs.routes import router as weight_logs_router
 from utils.config import settings
 from utils.helpers import run_migrations

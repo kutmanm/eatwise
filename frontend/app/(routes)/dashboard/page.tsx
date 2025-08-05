@@ -45,29 +45,7 @@ function DashboardContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#f9f9fa] min-h-screen">
-        {/* Welcome Section */}
-        {profile && (
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Welcome back! 👋
-            </h1>
-            <p className="text-gray-600">
-              Let's track your nutrition journey today
-            </p>
-          </div>
-        )}
 
-        {/* Stats Overview */}
-        {progress && !goalsLoading && (
-          <div className="mb-8">
-            <StatsOverview 
-              progress={progress}
-              streak={streak}
-              profile={profile}
-              goals={goals}
-            />
-          </div>
-        )}
 
         {/* Nutrition Circles */}
         <div className="mb-8">

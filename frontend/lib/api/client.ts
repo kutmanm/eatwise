@@ -3,6 +3,14 @@ import type { ApiResponse } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// Create a single Supabase client instance to avoid warnings
+const supabaseClient = typeof window !== 'undefined' 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    ) 
+  : null;
+
 class ApiClient {
   private baseURL: string;
 
@@ -11,14 +19,9 @@ class ApiClient {
   }
 
   private async getAuthToken(): Promise<string | null> {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || !supabaseClient) return null;
     
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     return session?.access_token || null;
   }
 
@@ -39,14 +42,29 @@ class ApiClient {
     }
 
     try {
+      console.log(`Making ${options.method || 'GET'} request to: ${url}`);
+      
       const response = await fetch(url, {
         ...options,
         headers,
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
+      }
 
       if (!response.ok) {
+        console.error(`API error (${response.status}):`, data);
+        
         // Handle FastAPI validation errors (422)
         if (response.status === 422 && Array.isArray(data.detail)) {
           const validationErrors = data.detail.map((err: any) => 
@@ -61,7 +79,7 @@ class ApiClient {
         // Handle other errors
         const errorMessage = typeof data.detail === 'string' 
           ? data.detail 
-          : data.message || 'An error occurred';
+          : data.message || data.error || 'An error occurred';
         
         return {
           error: errorMessage,
@@ -74,6 +92,7 @@ class ApiClient {
         status: response.status,
       };
     } catch (error) {
+      console.error('Network or parsing error:', error);
       return {
         error: error instanceof Error ? error.message : 'Network error',
         status: 0,

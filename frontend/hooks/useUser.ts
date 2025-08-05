@@ -69,14 +69,30 @@ export function useUserProfile() {
     try {
       setLoading(true);
       setError(null);
+      
+      // First check if we already have a user
+      const userResponse = await usersApi.getCurrentUser();
+      if (userResponse.error || !userResponse.data) {
+        console.log('User not found or not logged in, skipping profile fetch');
+        setLoading(false);
+        return;
+      }
+      
       const response = await usersApi.getUserProfile();
       
       if (response.error) {
-        setError(response.error);
+        // If we get a 404, it might mean the user doesn't have a profile yet
+        if (response.status === 404) {
+          console.log('Profile not found, user may need to create one');
+          setProfile(null);
+        } else {
+          setError(response.error);
+        }
       } else if (response.data) {
         setProfile(response.data);
       }
     } catch (err) {
+      console.error('Error fetching profile:', err);
       setError('Failed to fetch profile');
     } finally {
       setLoading(false);

@@ -1,8 +1,10 @@
-export type UserRole = 'free' | 'premium' | 'trial';
-export type ActivityLevel = 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
-export type GoalType = 'weight_loss' | 'muscle_gain' | 'maintain' | 'body_recomposition';
-export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
-export type TimeFrame = '2_weeks' | '1_month' | '3_months' | '6_months' | '1_year' | 'custom';
+import { UUID } from 'crypto';
+
+export type ApiResponse<T = any> = {
+  data?: T;
+  error?: string;
+  status: number;
+};
 
 export interface User {
   id: string;
@@ -12,117 +14,58 @@ export interface User {
   profile?: UserProfile;
 }
 
+export type UserRole = 'free' | 'premium' | 'trial';
+
+export interface ActivityLevel {
+  value: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
+  label: string;
+}
+
+export interface GoalType {
+  value: 'weight_loss' | 'muscle_gain' | 'maintain' | 'body_recomposition';
+  label: string;
+}
+
+export interface Gender {
+  value: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  label: string;
+}
+
+export interface TimeFrame {
+  value: '2_weeks' | '1_month' | '3_months' | '6_months' | '1_year' | 'custom';
+  label: string;
+}
+
 export interface UserProfile {
   id: number;
   user_id: string;
-  
-  // Basic demographics
   age: number;
-  gender: Gender;
-  height: number; // in cm
-  
-  // Weight information
-  initial_weight: number; // in kg - starting weight
-  current_weight: number; // in kg - current weight
-  target_weight: number;  // in kg - goal weight
-  
-  // Goals and preferences
-  activity_level: ActivityLevel;
-  goal: GoalType;
-  time_frame: TimeFrame;
-  target_date?: string; // specific target date if time_frame is CUSTOM
-  
-  // Nutrition goals
-  water_goal: number; // in ml per day
-  calorie_goal?: number; // calculated daily calorie target
-  protein_goal?: number; // in grams per day
-  carb_goal?: number;    // in grams per day
-  fat_goal?: number;     // in grams per day
-  
-  // Meal preferences
-  diet_preferences?: { [key: string]: any }; // JSON field for flexible diet preferences
-  
-  // Meal timing preferences
+  gender: string;
+  height: number;
+  initial_weight: number;
+  current_weight: number;
+  target_weight: number;
+  activity_level: string;
+  goal: string;
+  time_frame: string;
+  target_date?: string;
+  water_goal: number;
+  calorie_goal?: number;
+  protein_goal?: number;
+  carb_goal?: number;
+  fat_goal?: number;
+  diet_preferences?: Record<string, any>;
   breakfast_time?: string;
   lunch_time?: string;
   dinner_time?: string;
-  snack_times?: string[]; // Array of times for snacks
-  
-  // Metadata
+  snack_times?: string[];
   created_at: string;
   updated_at: string;
 }
 
 export interface Meal {
-  id: number;
+  id: string;
   user_id: string;
-  description?: string;
-  image_url?: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-  water?: number;
-  logged_at: string;
-}
-
-export interface Subscription {
-  id: number;
-  user_id: string;
-  plan: string;
-  start_date: string;
-  end_date?: string;
-  status: string; // trialing, active, canceled, etc.
-}
-
-export interface SubscriptionStatus {
-  has_subscription: boolean;
-  plan?: string;
-  status: string;
-  started_at?: string;
-  expires_at?: string;
-}
-
-export interface DailyNutritionSummary {
-  date: string;
-  meal_count: number;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-  water?: number;
-  calorie_goal?: number;
-  protein_goal?: number;
-  carbs_goal?: number;
-  fat_goal?: number;
-}
-
-// Update WeeklyProgressData to be more flexible for chart usage
-export interface WeeklyProgressData {
-  week_start: string;
-  daily_summaries: DailyNutritionSummary[];
-  avg_calories: number;
-  avg_protein: number;
-  avg_carbs: number;
-  avg_fat: number;
-  // Add direct access properties for charts
-  date?: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-}
-
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  status: number;
-}
-
-export interface PhotoAnalysisResponse {
   description: string;
   calories?: number;
   protein?: number;
@@ -130,44 +73,43 @@ export interface PhotoAnalysisResponse {
   fat?: number;
   fiber?: number;
   water?: number;
-  confidence: number;
+  logged_at: string;
+  photo_url?: string;
+  ai_analysis?: Record<string, any>;
 }
 
-export interface ChatLogResponse {
-  parsed_description: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-  water?: number;
-  confidence: number;
+export interface SubscriptionStatus {
+  is_active: boolean;
+  is_trialing: boolean;
+  is_canceled: boolean;
+  plan: string;
+  status: string;
+  started_at: string;
+  expires_at?: string;
 }
 
-// Weight Log interfaces
+export interface SubscriptionPlan {
+  name: string;
+  price: number;
+  currency: string;
+  interval: 'month' | 'year';
+  features: string[];
+}
+
 export interface WeightLog {
   id: number;
   user_id: string;
-  weight: number; // in kg
-  notes?: string;
-  logged_at: string;
-}
-
-export interface WeightLogCreate {
   weight: number;
-  notes?: string;
-}
-
-export interface WeightLogUpdate {
-  weight?: number;
+  logged_at: string;
   notes?: string;
 }
 
 export interface WeightStats {
-  total_entries: number;
-  latest_weight?: number;
-  weight_change?: number;
-  trend?: 'increasing' | 'decreasing' | 'stable' | 'insufficient_data';
+  starting_weight: number;
+  current_weight: number;
+  target_weight: number;
+  highest_weight: number;
+  lowest_weight: number;
   entries_count: number;
 }
 
