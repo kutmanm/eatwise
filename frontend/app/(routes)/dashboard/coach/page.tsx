@@ -11,11 +11,33 @@ import { AICoachingCard } from '@/components/ai/AICoachingCard';
 import { AIFeedbackPanel } from '@/components/ai/AIFeedbackPanel';
 import { useTodaysMeals } from '@/hooks/useMeals';
 import type { Meal } from '@/types';
+import { Input } from '@/components/ui/Input';
+import { useMedicalCoach } from '@/hooks/useAI';
+import { useSymptomCorrelation, useAISymptomAnalysis } from '@/hooks/useSymptoms';
 
 function AICoachContent() {
   const router = useRouter();
   const { meals, loading } = useTodaysMeals();
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [conditionsInput, setConditionsInput] = useState('');
+  const [symptomDomain, setSymptomDomain] = useState<string>('');
+  const [conditionQuestion, setConditionQuestion] = useState<string>('');
+  const { advice, loading: adviceLoading, error: adviceError, getAdvice, clearAdvice } = useMedicalCoach();
+  
+  // Symptom correlation analysis
+  const { analyzeCorrelations, correlationData, loading: correlationLoading } = useSymptomCorrelation();
+  const { getAIAnalysis, analysis: symptomAnalysis, loading: analysisLoading } = useAISymptomAnalysis();
+  
+  const handleSymptomAnalysis = async () => {
+    const correlations = await analyzeCorrelations({
+      date_range_days: 14,
+      include_lifestyle: true,
+    });
+    
+    if (correlations) {
+      await getAIAnalysis(correlations);
+    }
+  };
 
   if (loading) {
     return (
@@ -31,6 +53,130 @@ function AICoachContent() {
           {/* Left Column - AI Coaching */}
           <div className="lg:col-span-1">
             <AICoachingCard />
+
+            {/* Medical Conditions Coach */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">🩺</span>
+                  Medical Conditions Coach
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <label className="text-sm text-neutral-700">Conditions</label>
+                  <Input
+                    placeholder="e.g., IBS, lactose intolerance, GERD"
+                    value={conditionsInput}
+                    onChange={(e) => setConditionsInput(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-neutral-700">Symptom Domain (optional)</label>
+                  <select
+                    className="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm"
+                    value={symptomDomain}
+                    onChange={(e) => setSymptomDomain(e.target.value)}
+                  >
+                    <option value="">None</option>
+                    <option value="digestion">Digestion</option>
+                    <option value="skin">Skin</option>
+                    <option value="fatigue">Fatigue</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-neutral-700">Question (optional)</label>
+                  <textarea
+                    className="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm min-h-[80px]"
+                    placeholder="Any specific concern to address?"
+                    value={conditionQuestion}
+                    onChange={(e) => setConditionQuestion(e.target.value)}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={async () => {
+                      const conditions = conditionsInput
+                        .split(',')
+                        .map((c) => c.trim())
+                        .filter((c) => c.length > 0);
+                      if (conditions.length === 0) return;
+                      await getAdvice(conditions, {
+                        symptom_domain: symptomDomain || undefined,
+                        question: conditionQuestion || undefined,
+                      });
+                    }}
+                    loading={adviceLoading}
+                    disabled={!conditionsInput.trim()}
+                  >
+                    Get Condition Advice
+                  </Button>
+                  {advice && (
+                    <Button variant="ghost" onClick={() => clearAdvice()}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {adviceError && (
+                  <p className="text-xs text-error">{String(adviceError)}</p>
+                )}
+                {advice && (
+                  <div className="bg-amber-50 p-3 rounded-md">
+                    <p className="text-sm text-amber-900 whitespace-pre-line">{advice}</p>
+                    <p className="mt-2 text-[11px] text-amber-700">
+                      Informational only, not medical advice.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Symptom Correlation Analysis */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">🔍</span>
+                  Symptom Pattern Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-neutral-600">
+                  Analyze correlations between your meals, lifestyle, and symptoms to identify potential triggers.
+                </p>
+                
+                <Button
+                  onClick={handleSymptomAnalysis}
+                  loading={correlationLoading || analysisLoading}
+                  className="w-full"
+                >
+                  Analyze My Patterns (Last 14 Days)
+                </Button>
+                
+                {symptomAnalysis && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-blue-900 mb-2">Pattern Analysis</h4>
+                    <p className="text-sm text-blue-800 whitespace-pre-line">{symptomAnalysis}</p>
+                    <p className="mt-2 text-[11px] text-blue-700">
+                      Educational insights based on your logged data.
+                    </p>
+                  </div>
+                )}
+                
+                {correlationData && correlationData.patterns_found.length > 0 && (
+                  <div className="bg-neutral-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-neutral-900 mb-2">Detected Patterns</h4>
+                    <ul className="text-sm text-neutral-700 space-y-1">
+                      {correlationData.patterns_found.slice(0, 3).map((pattern, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>{pattern.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Middle Column - Today's Meals */}

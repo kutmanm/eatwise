@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     app_environment: str = "development"
     cors_origins: str = "http://localhost:3000"
     frontend_base_url: str = "http://localhost:3000"
+    at_rest_encryption_key: Optional[str] = None
     
     class Config:
         env_file = ".env"

@@ -4,6 +4,9 @@ from api.users.routes import router as users_router
 from api.meals.routes import router as meals_router
 from api.progress.routes import router as progress_router
 from api.ai.routes import router as ai_router
+from api.symptoms.routes import router as symptoms_router
+from api.diet_plans.routes import router as diet_plans_router
+from api.onboarding.routes import router as onboarding_router
 try:
     from api.subsciption.routes import router as subscription_router
 except ImportError:
@@ -18,6 +21,14 @@ from utils.config import settings
 from utils.helpers import run_migrations
 from utils.middleware import RequestLoggingMiddleware, ErrorContextMiddleware
 import logging
+from datetime import datetime, timedelta
+import asyncio
+from sqlalchemy.orm import Session as SyncSession
+from models.database import SessionLocal
+from models.user import User
+from models.diet_plan import WeeklySummary
+from services.meal_service import get_weekly_progress
+from services.symptom_service import get_symptom_summary_stats
 
 # Set up comprehensive logging
 logging.basicConfig(
@@ -36,10 +47,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS - Updated to be more permissive
+# Configure CORS from settings
+allowed_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -56,6 +68,8 @@ async def startup_event():
         logger.info("Starting database migrations...")
         run_migrations()
         logger.info("Application startup completed successfully")
+        # Start background scheduler
+        asyncio.create_task(_weekly_summary_scheduler())
     except Exception as e:
         logger.error(f"Database migration failed during startup: {e}")
         logger.warning("Application will continue to run, but database may not be properly initialized")
@@ -65,6 +79,9 @@ app.include_router(users_router)
 app.include_router(meals_router)
 app.include_router(progress_router)
 app.include_router(ai_router)
+app.include_router(symptoms_router)
+app.include_router(diet_plans_router)
+app.include_router(onboarding_router)
 app.include_router(subscription_router)
 app.include_router(weight_logs_router)
 
@@ -101,3 +118,50 @@ async def test_user_feedback_simple(request_data: dict):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+async def _weekly_summary_scheduler():
+    """Run daily to compute last week's summaries if missing."""
+    while True:
+        try:
+            # Sleep until 03:00 UTC
+            now = datetime.utcnow()
+            target = now.replace(hour=3, minute=0, second=0, microsecond=0)
+            if target <= now:
+                target += timedelta(days=1)
+            await asyncio.sleep((target - now).total_seconds())
+
+            db: SyncSession = SessionLocal()
+            try:
+                users = db.query(User).all()
+                # compute Monday of current week - 7 days (last week)
+                today = datetime.utcnow().date()
+                monday_this_week = today - timedelta(days=today.weekday())
+                week_start = monday_this_week - timedelta(days=7)
+                for user in users:
+                    exists = db.query(WeeklySummary).filter(
+                        WeeklySummary.user_id == user.id,
+                        WeeklySummary.week_start == week_start
+                    ).first()
+                    if exists:
+                        continue
+                    # Run computations
+                    weekly = await get_weekly_progress(user, week_start, db)
+                    symptom = await get_symptom_summary_stats(user, db, date_range_days=7)
+                    computed = {
+                        "week_start": week_start.isoformat(),
+                        "nutrition": {
+                            "avg_calories": weekly.avg_calories,
+                            "avg_protein": weekly.avg_protein,
+                            "avg_carbs": weekly.avg_carbs,
+                            "avg_fat": weekly.avg_fat,
+                        },
+                        "symptoms": symptom,
+                    }
+                    db.add(WeeklySummary(user_id=user.id, week_start=week_start, summary=computed))
+                    db.commit()
+            finally:
+                db.close()
+        except Exception:
+            logger.exception("Weekly summary scheduler failure")
+            await asyncio.sleep(3600)

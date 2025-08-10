@@ -58,6 +58,8 @@ class User(Base):
     subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
     weight_logs = relationship("WeightLog", back_populates="user", cascade="all, delete-orphan")
     user_feedback = relationship("UserFeedback", back_populates="user", cascade="all, delete-orphan")
+    symptom_logs = relationship("SymptomLog", back_populates="user", cascade="all, delete-orphan")
+    lifestyle_logs = relationship("LifestyleLog", back_populates="user", cascade="all, delete-orphan")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"

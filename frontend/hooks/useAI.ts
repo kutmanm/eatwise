@@ -118,3 +118,37 @@ export function useMealSuggestions() {
 
 // Alias for backward compatibility
 export const useAIQuestion = useNutritionQuestion;
+
+export function useMedicalCoach() {
+  const [loading, setLoading] = useState(false);
+  const [advice, setAdvice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const getAdvice = async (
+    conditions: string[],
+    options?: { symptom_domain?: string; question?: string }
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await aiApi.getMedicalCoachAdvice(conditions, options);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setAdvice(response.data!.advice);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    advice,
+    loading,
+    error,
+    getAdvice,
+    clearAdvice: () => setAdvice(null),
+  };
+}

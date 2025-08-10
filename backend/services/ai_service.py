@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from openai import AsyncOpenAI
 from utils.config import settings
 from schemas.meal import PhotoAnalysisResponse, ChatLogResponse
@@ -244,28 +244,25 @@ async def answer_nutrition_question(question: str, user: User) -> str:
         }.get(user.profile.goal if user.profile else GoalType.MAINTAIN, "general health")
         
         response = await client.chat.completions.create(
-    model="gpt-4o",
-    temperature=0.6,  # Mild creativity for varied, natural tips
-    max_tokens=120,
-    messages=[
-        {
-            "role": "system",
-            "content": (
-                f"You are a certified nutrition coach. Based on a person's recent meals and their goal ({goal_context}), "
-                "give one short, specific, and actionable tip to improve their nutrition. "
-                "The tip should be practical and goal-aligned (e.g., increase fiber, hydrate, improve protein timing, balance macros, reduce refined carbs, etc.). "
-                "Limit to 80 words. Avoid general advice like 'eat healthier' — be specific and helpful."
-            )
-        },
-        {
-            "role": "user",
-            "content": (
-                "Recent meals:\n" +
-                "\n".join([f"- {meal.get('description', 'meal')}" for meal in recent_meals[:3]])
-            )
-        }
-    ]
-)
+            model="gpt-4o",
+            temperature=0.6,  # Mild creativity for varied, natural tips
+            max_tokens=160,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        f"You are a certified nutrition coach. Based on the user's goal ({goal_context}), "
+                        "answer the user's question with one short, specific, actionable tip. "
+                        "Be practical and goal-aligned (e.g., increase fiber, hydrate, improve protein timing, balance macros, reduce refined carbs). "
+                        "Limit to 80 words. Avoid vague advice."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": question
+                }
+            ]
+        )
         
         return response.choices[0].message.content.strip()
     
@@ -310,3 +307,166 @@ async def suggest_meal_improvements(meal_data: Dict[str, Any], user: User) -> st
     
     except Exception:
         return "Consider adding more vegetables, lean protein, or healthy fats to make this meal more balanced!"
+
+
+async def analyze_symptom_correlations(
+    symptom_data: Dict[str, Any],
+    user: User
+) -> str:
+    """Generate AI insights about symptom patterns and correlations with meals/lifestyle"""
+    try:
+        goal_context = {
+            GoalType.WEIGHT_LOSS: "weight loss",
+            GoalType.MUSCLE_GAIN: "muscle gain",
+            GoalType.MAINTAIN: "weight maintenance"
+        }.get(user.profile.goal if getattr(user, "profile", None) else GoalType.MAINTAIN, "general health")
+
+        patterns = symptom_data.get("patterns_found", [])
+        symptom_logs = symptom_data.get("symptom_logs", [])
+        meal_data = symptom_data.get("meal_data", [])
+        lifestyle_logs = symptom_data.get("lifestyle_logs", [])
+
+        # Prepare structured data for AI analysis
+        recent_symptoms = [
+            f"- {s.get('symptom_type', 'unknown')}: severity {s.get('severity', 0)}/10 at {s.get('occurred_at', 'unknown time')}"
+            for s in symptom_logs[:10]
+        ]
+
+        recent_meals_summary = [
+            f"- {m.get('description', 'meal')}: {m.get('calories', '?')} cal at {m.get('logged_at', 'unknown time')}"
+            for m in meal_data[-10:]
+        ]
+
+        lifestyle_summary = [
+            f"- Sleep: {l.get('sleep_hours', '?')}h, Stress: {l.get('stress_level', '?')}/10, Exercise: {l.get('exercise_minutes', 0)}min"
+            for l in lifestyle_logs[-5:]
+        ]
+
+        patterns_summary = [
+            f"- {p.get('type', 'unknown')}: {p.get('description', 'no description')}"
+            for p in patterns
+        ]
+
+        response = await client.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.6,
+            max_tokens=300,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a nutrition and health pattern analyst. Analyze symptom, meal, and lifestyle data to identify potential correlations. "
+                        "Provide specific, actionable insights about potential dietary triggers or lifestyle factors. "
+                        "Be evidence-based but acknowledge limitations. Structure your response with: "
+                        "1) Key patterns identified, 2) Potential triggers/correlations, 3) Specific recommendations. "
+                        "Keep under 200 words. This is educational information, not medical diagnosis."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"User goal: {goal_context}\n"
+                        f"Recent symptoms ({len(recent_symptoms)}):\n" + "\n".join(recent_symptoms) + "\n"
+                        f"Recent meals ({len(recent_meals_summary)}):\n" + "\n".join(recent_meals_summary) + "\n"
+                        f"Recent lifestyle data:\n" + "\n".join(lifestyle_summary) + "\n"
+                        f"Detected patterns:\n" + "\n".join(patterns_summary or ["No clear patterns detected"]) + "\n"
+                        "Analyze these correlations and provide actionable insights."
+                    )
+                }
+            ]
+        )
+
+        return response.choices[0].message.content.strip()
+
+    except Exception:
+        return (
+            "Unable to analyze symptom correlations at this time. "
+            "Consider tracking symptoms for a longer period and ensure meal logging is consistent for better insights."
+        )
+
+
+async def generate_medical_condition_advice(
+    conditions: List[str],
+    user: User,
+    recent_meals: List[Dict[str, Any]],
+    symptom_domain: Optional[str] = None,
+    question: Optional[str] = None,
+) -> str:
+    """Generate AI coaching advice tailored to user medical conditions.
+
+    Emphasizes explainability by referencing likely triggers from recent meals and
+    offering concrete swaps. Not medical advice.
+    """
+    try:
+        goal_context = {
+            GoalType.WEIGHT_LOSS: "weight loss",
+            GoalType.MUSCLE_GAIN: "muscle gain",
+            GoalType.MAINTAIN: "weight maintenance"
+        }.get(user.profile.goal if getattr(user, "profile", None) else GoalType.MAINTAIN, "general health")
+
+        diet_prefs = {}
+        if getattr(user, "profile", None) and getattr(user.profile, "diet_preferences", None):
+            # Expecting a JSON dict like {"dietary_restrictions": [...], "allergies": [...]}.
+            diet_prefs = user.profile.diet_preferences or {}
+
+        domain_instruction = {
+            None: "",
+            "digestion": "Prioritize low-FODMAP patterns if relevant; focus on fiber tolerance, fat load, and meal timing.",
+            "skin": "Consider glycemic load, dairy tolerance, and highly processed oils as potential contributors.",
+            "fatigue": "Consider iron, B12, hydration, and steady glycemic control; avoid large rapid-carb spikes."
+        }.get(symptom_domain, "")
+
+        meal_summaries = [
+            f"- {m.get('description','meal')} | kcal: {m.get('calories','?')}, P:{m.get('protein','?')} C:{m.get('carbs','?')} F:{m.get('fat','?')}"
+            for m in recent_meals[:5]
+        ]
+
+        user_constraints = []
+        if isinstance(diet_prefs, dict):
+            restrictions = diet_prefs.get("dietary_restrictions") or []
+            allergies = diet_prefs.get("allergies") or []
+            if restrictions:
+                user_constraints.append(f"restrictions: {', '.join(map(str, restrictions))}")
+            if allergies:
+                user_constraints.append(f"allergies: {', '.join(map(str, allergies))}")
+
+        response = await client.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.5,
+            max_tokens=220,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a nutrition coach focused on medical-condition-aware guidance. "
+                        "Provide concise, practical advice aligned to the user's goal. Include explainability: "
+                        "call out likely triggers seen in recent meals, and offer concrete swaps or timing changes. "
+                        "Respect user restrictions/allergies. Keep under 120 words. "
+                        "This is general information, not medical advice."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Conditions: {', '.join(conditions) or 'none specified'}\n"
+                        f"Goal: {goal_context}\n"
+                        + (f"Constraints: {'; '.join(user_constraints)}\n" if user_constraints else "")
+                        + (f"Symptom domain: {symptom_domain}\n" if symptom_domain else "")
+                        + (f"Domain guidance: {domain_instruction}\n" if domain_instruction else "")
+                        + ("Recent meals:\n" + "\n".join(meal_summaries) + "\n")
+                        + (f"Question: {question}\n" if question else "")
+                        + (
+                            "Output format: 2–3 bullet points with: likely triggers (if any), 1–2 concrete swaps/additions,"
+                            " hydration/timing tip."
+                        )
+                    )
+                }
+            ]
+        )
+
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return (
+            "Consider potential triggers related to your conditions, keep meals simple and balanced, "
+            "and make one small swap at a time (e.g., try lactose-free dairy, swap refined carbs for whole grains)."
+        )

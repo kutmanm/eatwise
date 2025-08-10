@@ -12,4 +12,17 @@ export const aiApi = {
 
   getMealSuggestions: (mealId: number) =>
     apiClient.post<{ suggestions: string }>('/api/ai/meal-adjustment', { meal_id: mealId }),
+
+  getMedicalCoachAdvice: (
+    conditions: string[],
+    options?: { symptom_domain?: string; question?: string }
+  ) =>
+    apiClient.post<{ advice: string }>(
+      '/api/ai/medical-coach',
+      {
+        conditions,
+        symptom_domain: options?.symptom_domain,
+        question: options?.question,
+      }
+    ),
 };

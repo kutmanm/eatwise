@@ -176,15 +176,155 @@ async def get_recent_meals_for_ai(user: User, db: Session, limit: int = 5) -> Li
     
     return [
         {
+            "id": meal.id,
             "description": meal.description,
             "calories": meal.calories,
             "protein": meal.protein,
             "carbs": meal.carbs,
             "fat": meal.fat,
+            "fiber": meal.fiber,
+            "sodium": meal.sodium,
+            "meal_type": meal.meal_type,
+            "dietary_tags": meal.dietary_tags,
+            "ingredients": meal.ingredients,
             "logged_at": meal.logged_at
         }
         for meal in meals
     ]
+
+
+async def get_meals_in_time_window(
+    user: User,
+    db: Session,
+    start_time: datetime,
+    end_time: datetime,
+    include_micronutrients: bool = False
+) -> List[Dict[str, Any]]:
+    """Get meals within a specific time window for correlation analysis"""
+    meals = db.query(Meal).filter(
+        and_(
+            Meal.user_id == user.id,
+            Meal.logged_at >= start_time,
+            Meal.logged_at <= end_time
+        )
+    ).order_by(Meal.logged_at).all()
+    
+    meal_data = []
+    for meal in meals:
+        data = {
+            "id": meal.id,
+            "description": meal.description,
+            "calories": meal.calories,
+            "protein": meal.protein,
+            "carbs": meal.carbs,
+            "fat": meal.fat,
+            "fiber": meal.fiber,
+            "meal_type": meal.meal_type,
+            "logged_at": meal.logged_at,
+            "dietary_tags": meal.dietary_tags or [],
+            "ingredients": meal.ingredients or []
+        }
+        
+        if include_micronutrients:
+            data.update({
+                "sodium": meal.sodium,
+                "potassium": meal.potassium,
+                "calcium": meal.calcium,
+                "magnesium": meal.magnesium,
+                "iron": meal.iron,
+                "zinc": meal.zinc,
+                "vitamin_c": meal.vitamin_c,
+                "vitamin_d": meal.vitamin_d,
+                "vitamin_b12": meal.vitamin_b12,
+                "folate": meal.folate
+            })
+        
+        meal_data.append(data)
+    
+    return meal_data
+
+
+async def find_meals_before_symptoms(
+    user: User,
+    db: Session,
+    symptom_time: datetime,
+    hours_before: int = 6
+) -> List[Dict[str, Any]]:
+    """Find meals that occurred before a symptom within a specified time window"""
+    start_time = symptom_time - timedelta(hours=hours_before)
+    
+    return await get_meals_in_time_window(
+        user, db, start_time, symptom_time, include_micronutrients=True
+    )
+
+
+async def analyze_meal_nutrient_patterns(
+    user: User,
+    db: Session,
+    days: int = 30
+) -> Dict[str, Any]:
+    """Analyze patterns in meal nutrients for AI coaching"""
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+    
+    meals = await get_meals_in_time_window(
+        user, db, start_date, end_date, include_micronutrients=True
+    )
+    
+    if not meals:
+        return {"error": "No meals found in the specified period"}
+    
+    # Calculate nutrient averages and patterns
+    nutrients = {
+        "calories": [m["calories"] for m in meals if m["calories"]],
+        "protein": [m["protein"] for m in meals if m["protein"]],
+        "carbs": [m["carbs"] for m in meals if m["carbs"]],
+        "fat": [m["fat"] for m in meals if m["fat"]],
+        "fiber": [m["fiber"] for m in meals if m["fiber"]],
+        "sodium": [m["sodium"] for m in meals if m["sodium"]]
+    }
+    
+    patterns = {}
+    for nutrient, values in nutrients.items():
+        if values:
+            patterns[nutrient] = {
+                "avg": sum(values) / len(values),
+                "min": min(values),
+                "max": max(values),
+                "count": len(values)
+            }
+    
+    # Meal timing patterns
+    meal_times = {}
+    for meal in meals:
+        hour = meal["logged_at"].hour
+        meal_times[hour] = meal_times.get(hour, 0) + 1
+    
+    # Common ingredients and dietary tags
+    all_ingredients = []
+    all_tags = []
+    for meal in meals:
+        if meal["ingredients"]:
+            all_ingredients.extend(meal["ingredients"])
+        if meal["dietary_tags"]:
+            all_tags.extend(meal["dietary_tags"])
+    
+    ingredient_counts = {}
+    for ingredient in all_ingredients:
+        ingredient_counts[ingredient] = ingredient_counts.get(ingredient, 0) + 1
+    
+    tag_counts = {}
+    for tag in all_tags:
+        tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    
+    return {
+        "nutrient_patterns": patterns,
+        "meal_timing": meal_times,
+        "common_ingredients": dict(sorted(ingredient_counts.items(), key=lambda x: x[1], reverse=True)[:10]),
+        "dietary_patterns": dict(sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[:5]),
+        "total_meals": len(meals),
+        "analysis_period_days": days
+    }
 
 async def search_meals(user: User, query: str, db: Session, limit: int = 20) -> List[Meal]:
     return db.query(Meal).filter(

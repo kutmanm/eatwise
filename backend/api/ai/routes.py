@@ -4,7 +4,14 @@ from pydantic import BaseModel
 from models.database import get_db
 from models.user import User
 from services.auth_service import get_current_user
-from services.ai_service import generate_meal_feedback, generate_daily_tip, answer_nutrition_question, suggest_meal_improvements
+from services.ai_service import (
+    generate_meal_feedback,
+    generate_daily_tip,
+    answer_nutrition_question,
+    suggest_meal_improvements,
+    generate_medical_condition_advice,
+    analyze_symptom_correlations,
+)
 from services.meal_service import get_recent_meals_for_ai, get_daily_nutrition_summary, get_meal_by_id
 from datetime import date
 
@@ -18,6 +25,14 @@ class NutritionQuestionRequest(BaseModel):
 
 class MealAdjustmentRequest(BaseModel):
     meal_id: int
+
+class MedicalCoachRequest(BaseModel):
+    conditions: list[str]
+    symptom_domain: str | None = None  # e.g., digestion, skin, fatigue
+    question: str | None = None
+
+class SymptomAnalysisRequest(BaseModel):
+    symptom_data: dict  # Correlation data from symptom service
 
 @router.post("/feedback")
 async def get_meal_feedback(
@@ -94,3 +109,34 @@ async def get_meal_suggestions(
     
     suggestions = await suggest_meal_improvements(meal_data, current_user)
     return {"suggestions": suggestions}
+
+
+@router.post("/medical-coach")
+async def medical_condition_coach(
+    request: MedicalCoachRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    recent_meals = await get_recent_meals_for_ai(current_user, db, limit=5)
+    advice = await generate_medical_condition_advice(
+        conditions=request.conditions,
+        user=current_user,
+        recent_meals=recent_meals,
+        symptom_domain=request.symptom_domain,
+        question=request.question,
+    )
+    return {"advice": advice}
+
+
+@router.post("/symptom-analysis")
+async def analyze_symptoms(
+    request: SymptomAnalysisRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Analyze symptom correlations with meals and lifestyle factors"""
+    analysis = await analyze_symptom_correlations(
+        request.symptom_data,
+        current_user
+    )
+    return {"analysis": analysis}

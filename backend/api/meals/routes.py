@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime, date
@@ -13,6 +14,7 @@ from services.meal_service import (
     create_meal, get_user_meals, get_meal_by_id, update_meal, delete_meal,
     analyze_photo, parse_chat_log, search_meals
 )
+from services.validation_service import DataValidator
 
 router = APIRouter(prefix="/api/meals", tags=["meals"])
 
@@ -23,7 +25,47 @@ async def create_new_meal(
     db: Session = Depends(get_db)
 ):
     meal = await create_meal(current_user, meal_data, db)
+    # Trigger quick validation (non-blocking semantics kept simple here)
+    try:
+        await DataValidator().validate_meal_data(current_user, db, days=7)
+    except Exception:
+        pass
     return meal
+
+
+class MinimalMealLog(BaseModel):
+    description: str
+    portion_size: str
+    meal_type: str
+    logged_at: Optional[str] = None
+
+
+@router.post("/minimal", response_model=Meal)
+async def create_minimal_meal(
+    meal: MinimalMealLog,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Minimal logging mode: name + portion size. Nutrition left null."""
+    try:
+        from schemas.meal import MealCreate
+        logged = None
+        if meal.logged_at:
+            try:
+                logged = datetime.fromisoformat(meal.logged_at)
+            except ValueError:
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid logged_at format")
+        mc = MealCreate(
+            description=f"{meal.description} ({meal.portion_size})",
+            meal_type=meal.meal_type,
+            logged_at=logged
+        )
+        created = await create_meal(current_user, mc, db)
+        return created
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("", response_model=List[Meal])
 async def get_meals(
