@@ -64,7 +64,7 @@ export interface UserProfile {
 }
 
 export interface Meal {
-  id: string;
+  id: number; // Backend returns integer ID
   user_id: string;
   description: string;
   calories?: number;
@@ -111,6 +111,29 @@ export interface WeightStats {
   highest_weight: number;
   lowest_weight: number;
   entries_count: number;
+}
+
+// Analysis responses (mirror backend schemas)
+export interface PhotoAnalysisResponse {
+  description: string;
+  confidence: number; // 0..1
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  water?: number;
+}
+
+export interface ChatLogResponse {
+  parsed_description: string;
+  confidence: number; // 0..1
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  water?: number;
 }
 
 // Progress / analytics types
