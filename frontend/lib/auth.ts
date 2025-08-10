@@ -2,6 +2,8 @@ import { supabase } from './supabase';
 import type { User } from '@supabase/supabase-js';
 
 export const auth = {
+  // Prefer configured site URL, fallback to current origin at runtime
+  getAppOrigin: () => (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')),
   signUp: async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -19,10 +21,11 @@ export const auth = {
   },
 
   signInWithGoogle: async () => {
+    const appOrigin = auth.getAppOrigin();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: appOrigin ? `${appOrigin}/dashboard` : undefined,
       },
     });
     return { data, error };
@@ -34,8 +37,9 @@ export const auth = {
   },
 
   resetPassword: async (email: string) => {
+    const appOrigin = auth.getAppOrigin();
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: appOrigin ? `${appOrigin}/auth/reset-password` : undefined,
     });
     return { data, error };
   },
