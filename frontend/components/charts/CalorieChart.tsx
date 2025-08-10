@@ -11,9 +11,10 @@ interface CalorieChartProps {
 }
 
 export function CalorieChart({ data, calorieGoal = 2000 }: CalorieChartProps) {
-  const chartData = data.map(item => ({
-    date: formatDate(item.date || new Date().toISOString(), 'MMM dd'),
-    calories: item.calories || 0,
+  // Flatten weekly structure to daily points
+  const chartData = (data?.[0]?.daily_summaries || []).map((day) => ({
+    date: formatDate(typeof day.date === 'string' ? day.date : new Date(day.date).toISOString(), 'MMM dd'),
+    calories: day.calories || 0,
     goal: calorieGoal,
   }));
 

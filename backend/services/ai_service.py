@@ -105,39 +105,47 @@ async def analyze_meal_photo(image_url: str) -> PhotoAnalysisResponse:
 async def parse_meal_text(description: str) -> ChatLogResponse:
     try:
         response = await client.chat.completions.create(
-    model="gpt-4o",  # Full model for best parsing and reasoning
-    temperature=0.0,  # Deterministic output
-    top_p=1.0,
-    max_tokens=400,
-    messages=[
-        {
-            "role": "system",
-            "content": (
-                "You are a professional nutrition analyst. "
-                "Given a natural language meal description, your task is to extract and interpret the food items, estimate their quantities, "
-                "and compute an accurate nutritional profile. "
-                "Only return a **valid JSON object** with the following fields:\n"
-                "- parsed_description (string)\n"
-                "- calories (float)\n"
-                "- protein (float)\n"
-                "- carbs (float)\n"
-                "- fat (float)\n"
-                "- fiber (float)\n"
-                "- water (float)\n"
-                "- confidence (float from 0.0 to 1.0)\n\n"
-                "Units: grams for all except calories.\n"
-                "Be conservative with confidence scores if information is ambiguous or portion size is unclear."
-            )
-        },
-        {
-            "role": "user",
-            "content": f"Estimate the nutritional values for this meal: {description}. Only return valid JSON."
-        }
-    ]
-)
-        
-        result = json.loads(response.choices[0].message.content)
-        return ChatLogResponse(**result)
+            model="gpt-4o",  # Full model for best parsing and reasoning
+            temperature=0.0,  # Deterministic output
+            top_p=1.0,
+            max_tokens=400,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional nutrition analyst. "
+                        "Given a natural language meal description, your task is to extract and interpret the food items, estimate their quantities, "
+                        "and compute an accurate nutritional profile. "
+                        "Only return a valid JSON object with the following fields:\n"
+                        "- parsed_description (string)\n"
+                        "- calories (float)\n"
+                        "- protein (float)\n"
+                        "- carbs (float)\n"
+                        "- fat (float)\n"
+                        "- fiber (float)\n"
+                        "- water (float)\n"
+                        "- confidence (float from 0.0 to 1.0)\n\n"
+                        "Units: grams for all except calories.\n"
+                        "Be conservative with confidence scores if information is ambiguous or portion size is unclear."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Estimate the nutritional values for this meal: {description}. Only return valid JSON."
+                }
+            ]
+        )
+
+        # Some model responses may include prose around the JSON. Extract the JSON block safely.
+        response_text = response.choices[0].message.content
+        json_start = response_text.find('{')
+        json_end = response_text.rfind('}') + 1
+        if json_start >= 0 and json_end > json_start:
+            json_str = response_text[json_start:json_end]
+            result = json.loads(json_str)
+            return ChatLogResponse(**result)
+        else:
+            raise ValueError("No valid JSON found in response")
     
     except Exception as e:
         print(f"Error parsing meal text: {e}")  # For debugging

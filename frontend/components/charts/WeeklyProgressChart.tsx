@@ -11,12 +11,14 @@ interface WeeklyProgressChartProps {
 }
 
 export function WeeklyProgressChart({ data, title = "Weekly Progress" }: WeeklyProgressChartProps) {
-  const chartData = data.map(item => ({
-    date: formatDate(item.date || new Date().toISOString(), 'EEE'),
-    protein: item.protein || 0,
-    carbs: item.carbs || 0,
-    fat: item.fat || 0,
-    fiber: item.fiber || 0,
+  // Use the first weekly block, expand to its days
+  const daily = data?.[0]?.daily_summaries || [];
+  const chartData = daily.map((day) => ({
+    date: formatDate(typeof day.date === 'string' ? day.date : new Date(day.date).toISOString(), 'EEE'),
+    protein: day.protein || 0,
+    carbs: day.carbs || 0,
+    fat: day.fat || 0,
+    fiber: day.fiber || 0,
   }));
 
   return (

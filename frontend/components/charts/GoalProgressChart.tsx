@@ -21,12 +21,14 @@ export function GoalProgressChart({
   goals, 
   title = "Goal Achievement" 
 }: GoalProgressChartProps) {
-  const chartData = data.map(item => ({
-    date: formatDate(item.date || new Date().toISOString(), 'MMM dd'),
-    calorieProgress: calculatePercentage(item.calories || 0, goals.calories),
-    proteinProgress: calculatePercentage(item.protein || 0, goals.protein),
-    carbsProgress: calculatePercentage(item.carbs || 0, goals.carbs),
-    fatProgress: calculatePercentage(item.fat || 0, goals.fat),
+  // Expand weekly data to daily summaries for progress calculation
+  const daily = data?.[0]?.daily_summaries || [];
+  const chartData = daily.map((day) => ({
+    date: formatDate(typeof day.date === 'string' ? day.date : new Date(day.date).toISOString(), 'MMM dd'),
+    calorieProgress: calculatePercentage(day.calories || 0, goals.calories),
+    proteinProgress: calculatePercentage(day.protein || 0, goals.protein),
+    carbsProgress: calculatePercentage(day.carbs || 0, goals.carbs),
+    fatProgress: calculatePercentage(day.fat || 0, goals.fat),
   }));
 
   return (

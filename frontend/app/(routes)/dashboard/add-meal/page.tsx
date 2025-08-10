@@ -205,15 +205,7 @@ function AddMealContent() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {analysisResult && 'confidence' in analysisResult && (
-                    <div className="flex items-center justify-between">
-                      <span>Review & Edit Meal</span>
-                      <span className="text-sm text-neutral-600">
-                        Confidence: {Math.round((analysisResult.confidence || 0) * 100)}%
-                      </span>
-                    </div>
-                  )}
-                  {!analysisResult && 'Enter Meal Information'}
+                  {analysisResult ? 'Review & Edit Meal' : 'Enter Meal Information'}
                 </CardTitle>
               </CardHeader>
               <CardContent>

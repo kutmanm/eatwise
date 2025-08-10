@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/Input';
@@ -41,17 +42,37 @@ export function NutritionEditor({
   const watchedValues = watch();
   const totalMacros = (watchedValues.protein || 0) + (watchedValues.carbs || 0) + (watchedValues.fat || 0);
 
+  // Auto-grow description textarea height
+  const adjustTextareaHeight = () => {
+    const el = document.getElementById('description') as HTMLTextAreaElement | null;
+    if (!el) return;
+    el.style.height = 'auto';
+    // Grow to fit content with no scrollbar
+    el.style.height = el.scrollHeight + 'px';
+  };
+
+  useEffect(() => {
+    // Adjust on mount to fit initial data if present
+    adjustTextareaHeight();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit(onSave)} className="space-y-4">
         <div>
           <Label htmlFor="description">Meal Description</Label>
-          <Input
+          <textarea
             id="description"
             placeholder="Describe your meal..."
-            error={errors.description?.message}
+            className="form-input resize-none min-h-[48px] overflow-hidden w-full"
+            rows={2}
+            onInput={adjustTextareaHeight}
             {...register('description')}
           />
+          {errors.description?.message && (
+            <p className="text-sm text-error mt-1">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

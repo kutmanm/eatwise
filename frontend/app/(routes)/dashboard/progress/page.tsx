@@ -43,7 +43,7 @@ function ProgressContent() {
   const goals = {
     calories: profile?.calorie_goal || 2000,
     protein: profile?.protein_goal || 150,
-    carbs: profile?.carbs_goal || 200,
+    carbs: profile?.carb_goal ?? 200,
     fat: profile?.fat_goal || 65,
   };
 
@@ -85,7 +85,7 @@ function ProgressContent() {
         return (
           <WeightTrendChart 
             data={mockWeightData}
-            goalWeight={profile?.goal_weight || undefined}
+            goalWeight={profile?.target_weight || undefined}
           />
         );
       

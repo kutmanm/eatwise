@@ -113,6 +113,31 @@ export interface WeightStats {
   entries_count: number;
 }
 
+// Progress / analytics types
+export interface DailyNutritionSummary {
+  date: string; // ISO date string
+  meal_count: number;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  water?: number;
+  calorie_goal?: number;
+  protein_goal?: number;
+  carbs_goal?: number;
+  fat_goal?: number;
+}
+
+export interface WeeklyProgressData {
+  week_start: string; // ISO date string for Monday of the week
+  daily_summaries: DailyNutritionSummary[];
+  avg_calories: number;
+  avg_protein: number;
+  avg_carbs: number;
+  avg_fat: number;
+}
+
 // User Feedback interfaces
 export interface UserFeedback {
   id: number;
