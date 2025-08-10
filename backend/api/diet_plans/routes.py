@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from models.database import get_db
 from models.user import User
 from services.auth_service import get_current_user, require_premium
-from models.diet_plan import DietPlanModel, WeeklySummary, PlanFeedback
+from models.diet_plan import DietPlan, WeeklySummary, PlanFeedback
 from services.diet_plan_service import (
     generate_7_day_diet_plan,
     update_plan_after_feedback
@@ -78,9 +78,9 @@ async def get_current_plan(
 ):
     """Get the user's current active diet plan"""
     # Fetch most recent week plan
-    plan = db.query(DietPlanModel).filter(
-        DietPlanModel.user_id == current_user.id
-    ).order_by(DietPlanModel.week_start.desc()).first()
+    plan = db.query(DietPlan).filter(
+        DietPlan.user_id == current_user.id
+    ).order_by(DietPlan.week_start.desc()).first()
 
     if not plan:
         return {
@@ -161,10 +161,10 @@ async def edit_plan_meal(
 ):
     """Edit a specific meal in the diet plan"""
     try:
-        plan = db.query(DietPlanModel).filter(
-            DietPlanModel.user_id == current_user.id,
-            DietPlanModel.week_start <= datetime.fromisoformat(request.date).date()
-        ).order_by(DietPlanModel.week_start.desc()).first()
+        plan = db.query(DietPlan).filter(
+            DietPlan.user_id == current_user.id,
+            DietPlan.week_start <= datetime.fromisoformat(request.date).date()
+        ).order_by(DietPlan.week_start.desc()).first()
 
         if not plan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan not found")
@@ -206,9 +206,9 @@ async def log_meal_from_plan(
 ):
     """Log a meal from the diet plan to actual meal tracking"""
     try:
-        plan = db.query(DietPlanModel).filter(
-            DietPlanModel.user_id == current_user.id
-        ).order_by(DietPlanModel.week_start.desc()).first()
+        plan = db.query(DietPlan).filter(
+            DietPlan.user_id == current_user.id
+        ).order_by(DietPlan.week_start.desc()).first()
         if not plan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan not found")
 

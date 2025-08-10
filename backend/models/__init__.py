@@ -1,6 +1,6 @@
 from .user import Base, User, UserProfile, Subscription, WeightLog, UserFeedback, UserRole, ActivityLevel, GoalType, Gender, TimeFrame
 from .meal import Meal
-from .diet_plan import DietPlan as DietPlanModel, WeeklySummary
+from .diet_plan import DietPlan, WeeklySummary, PlanFeedback
 from .symptom import SymptomLog, LifestyleLog, SymptomType, SymptomSeverity, SymptomDomain
 from .database import engine, SessionLocal, get_db
 __all__ = [
@@ -11,8 +11,9 @@ __all__ = [
     "Subscription",
     "WeightLog",
     "UserFeedback",
-    "DietPlanModel",
+    "DietPlan",
     "WeeklySummary",
+    "PlanFeedback",
     "SymptomLog",
     "LifestyleLog",
     "UserRole",

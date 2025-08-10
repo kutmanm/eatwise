@@ -2,7 +2,7 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from models.user import User
 from models.meal import Meal
-from models.diet_plan import DietPlan as DietPlanModel, WeeklySummary
+from models.diet_plan import DietPlan, WeeklySummary
 from models.symptom import SymptomLog
 from services.ai_service import client
 from services.symptom_service import get_symptom_summary_stats
@@ -70,9 +70,9 @@ async def generate_7_day_diet_plan(
         structured_plan = _structure_diet_plan(plan_json, week_start, user)
 
         # Persist (upsert) plan
-        existing = db.query(DietPlanModel).filter(
-            DietPlanModel.user_id == user.id,
-            DietPlanModel.week_start == week_start
+        existing = db.query(DietPlan).filter(
+            DietPlan.user_id == user.id,
+            DietPlan.week_start == week_start
         ).first()
         if existing:
             existing.plan = structured_plan
@@ -80,7 +80,7 @@ async def generate_7_day_diet_plan(
             db.commit()
             db.refresh(existing)
         else:
-            db_plan = DietPlanModel(
+            db_plan = DietPlan(
                 user_id=user.id,
                 week_start=week_start,
                 plan=structured_plan,
