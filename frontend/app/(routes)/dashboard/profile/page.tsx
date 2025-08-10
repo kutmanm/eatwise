@@ -14,7 +14,25 @@ import { useUserProfile, useUser, useUserGoals } from '@/hooks/useUser';
 import { useWeightLogs } from '@/hooks/useWeightLogs';
 import { useAuthContext } from '@/components/auth/AuthProvider';
 import { usersApi } from '@/lib/api';
-import { profileUpdateSchema, type ProfileUpdateFormData, type Gender, type ActivityLevel, type GoalType, type TimeFrame } from '@/types';
+import { profileUpdateSchema, type ProfileUpdateFormData } from '@/types';
+
+// Allowed enum values used in forms
+const GENDER_VALUES = ['male','female','other','prefer_not_to_say'] as const;
+type GenderValue = typeof GENDER_VALUES[number];
+
+const ACTIVITY_VALUES = ['sedentary','lightly_active','moderately_active','very_active','extremely_active'] as const;
+type ActivityValue = typeof ACTIVITY_VALUES[number];
+
+const GOAL_VALUES = ['weight_loss','muscle_gain','maintain','body_recomposition'] as const;
+type GoalValue = typeof GOAL_VALUES[number];
+
+const TIMEFRAME_VALUES = ['2_weeks','1_month','3_months','6_months','1_year','custom'] as const;
+type TimeFrameValue = typeof TIMEFRAME_VALUES[number];
+
+function coerceToAllowed<T extends readonly string[]>(value: string | null | undefined, allowed: T): T[number] | undefined {
+  const v = (value ?? '') as T[number];
+  return (allowed as readonly string[]).includes(v as string) ? v : undefined;
+}
 
 function ProfileContent() {
   const router = useRouter();
@@ -45,14 +63,14 @@ function ProfileContent() {
     if (profile) {
       reset({
         age: profile.age,
-        gender: profile.gender,
+        gender: coerceToAllowed(profile.gender, GENDER_VALUES),
         height: profile.height,
         initial_weight: profile.initial_weight,
         current_weight: profile.current_weight,
         target_weight: profile.target_weight,
-        activity_level: profile.activity_level,
-        goal: profile.goal,
-        time_frame: profile.time_frame,
+        activity_level: coerceToAllowed(profile.activity_level, ACTIVITY_VALUES),
+        goal: coerceToAllowed(profile.goal, GOAL_VALUES),
+        time_frame: coerceToAllowed(profile.time_frame, TIMEFRAME_VALUES),
         target_date: profile.target_date,
         water_goal: profile.water_goal,
         breakfast_time: profile.breakfast_time,
@@ -98,17 +116,17 @@ function ProfileContent() {
     );
   }
 
-  const getGenderLabel = (gender: Gender) => {
+  const getGenderLabel = (gender: string) => {
     const labels = {
       male: 'Male',
       female: 'Female',
       other: 'Other',
       prefer_not_to_say: 'Prefer not to say'
     };
-    return labels[gender];
+    return labels[(gender as GenderValue)] ?? 'Other';
   };
 
-  const getActivityLabel = (level: ActivityLevel) => {
+  const getActivityLabel = (level: string) => {
     const labels = {
       sedentary: 'Sedentary',
       lightly_active: 'Lightly Active',
@@ -116,20 +134,20 @@ function ProfileContent() {
       very_active: 'Very Active',
       extremely_active: 'Extremely Active'
     };
-    return labels[level];
+    return labels[(level as ActivityValue)] ?? level;
   };
 
-  const getGoalLabel = (goal: GoalType) => {
+  const getGoalLabel = (goal: string) => {
     const labels = {
       weight_loss: 'Weight Loss',
       muscle_gain: 'Muscle Gain',
       maintain: 'Maintain Weight',
       body_recomposition: 'Body Recomposition'
     };
-    return labels[goal];
+    return labels[(goal as GoalValue)] ?? goal;
   };
 
-  const getTimeFrameLabel = (timeFrame: TimeFrame) => {
+  const getTimeFrameLabel = (timeFrame: string) => {
     const labels = {
       '2_weeks': '2 Weeks',
       '1_month': '1 Month',
@@ -138,7 +156,7 @@ function ProfileContent() {
       '1_year': '1 Year',
       custom: 'Custom Date'
     };
-    return labels[timeFrame];
+    return labels[(timeFrame as TimeFrameValue)] ?? timeFrame;
   };
 
   return (
