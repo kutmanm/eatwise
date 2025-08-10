@@ -190,7 +190,7 @@ async def get_billing_portal_url(user: User) -> str:
         
         session = stripe.billing_portal.Session.create(
             customer=customer.id,
-            return_url="http://localhost:3000/dashboard"
+            return_url=f"{settings.frontend_base_url}/dashboard"
         )
         
         return session.url

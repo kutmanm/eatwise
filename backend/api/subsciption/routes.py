@@ -12,12 +12,12 @@ router = APIRouter(prefix="/subscription", tags=["subscription"])
 
 class CheckoutRequest:
     def __init__(self, plan: str, promo_code: Optional[str] = None,
-                 success_url: str = "http://localhost:3000/dashboard",
-                 cancel_url: str = "http://localhost:3000/pricing"):
+                 success_url: Optional[str] = None,
+                 cancel_url: Optional[str] = None):
         self.plan = plan
         self.promo_code = promo_code
-        self.success_url = success_url
-        self.cancel_url = cancel_url
+        self.success_url = success_url or f"{settings.frontend_base_url}/dashboard"
+        self.cancel_url = cancel_url or f"{settings.frontend_base_url}/pricing"
 
 @router.post("/create-checkout-session")
 async def checkout(
@@ -28,8 +28,8 @@ async def checkout(
     """Create a new Stripe checkout session for subscription"""
     plan = data.get("plan")
     promo_code = data.get("promo_code")
-    success_url = data.get("success_url", "http://localhost:3000/dashboard")
-    cancel_url = data.get("cancel_url", "http://localhost:3000/pricing")
+    success_url = data.get("success_url", f"{settings.frontend_base_url}/dashboard")
+    cancel_url = data.get("cancel_url", f"{settings.frontend_base_url}/pricing")
     
     if not plan:
         return {"error": "Plan is required"}

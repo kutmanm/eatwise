@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str
     app_environment: str = "development"
     cors_origins: str = "http://localhost:3000"
+    frontend_base_url: str = "http://localhost:3000"
     
     class Config:
         env_file = ".env"

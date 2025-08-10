@@ -207,8 +207,9 @@ async def checkout(
     """Create a new Stripe checkout session for subscription (moved from subscription routes)"""
     plan = data.get("plan")
     promo_code = data.get("promo_code")
-    success_url = data.get("success_url", "http://localhost:3000/dashboard")
-    cancel_url = data.get("cancel_url", "http://localhost:3000/pricing")
+    from utils.config import settings
+    success_url = data.get("success_url", f"{settings.frontend_base_url}/dashboard")
+    cancel_url = data.get("cancel_url", f"{settings.frontend_base_url}/pricing")
     
     if not plan:
         return {"error": "Plan is required"}
