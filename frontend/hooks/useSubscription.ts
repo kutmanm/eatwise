@@ -9,7 +9,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   
   const subscribeToPlan = async (plan: string, promoCode?: string) => {
@@ -72,8 +72,8 @@ export const useSubscription = () => {
         toast.error(response.error);
       } else if (response.data?.success) {
         toast.success('Your subscription has been canceled');
-        // Refresh user to update subscription status
-        await refreshUser();
+        // Optionally trigger a page reload or refetch user from server if needed
+        router.refresh?.();
       }
     } catch (error) {
       toast.error('Failed to cancel subscription');

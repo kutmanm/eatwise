@@ -30,11 +30,9 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
     defaultValues: initialData || {
       dietary_restrictions: [],
       allergies: [],
-      dislikes: [],
+      disliked_foods: [],
       cuisine_preferences: [],
-      cooking_skill: 'beginner',
-      meal_prep_time: 30,
-      budget_preference: 'moderate',
+      // optional fields below may be part of a future schema; omit to satisfy current types
     },
   });
 
@@ -83,7 +81,7 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
     setValue(field, newValues);
   };
 
-  const addCustomItem = (field: 'allergies' | 'dislikes', customValue: string, setter: (value: string) => void) => {
+  const addCustomItem = (field: 'allergies' | 'disliked_foods', customValue: string, setter: (value: string) => void) => {
     if (customValue.trim()) {
       const currentValues = watchedValues[field] as string[] || [];
       setValue(field, [...currentValues, customValue.trim()]);
@@ -91,7 +89,7 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
     }
   };
 
-  const removeItem = (field: 'allergies' | 'dislikes', item: string) => {
+  const removeItem = (field: 'allergies' | 'disliked_foods', item: string) => {
     const currentValues = watchedValues[field] as string[] || [];
     setValue(field, currentValues.filter(v => v !== item));
   };
@@ -186,8 +184,8 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
                   <label key={dislike} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={watchedValues.dislikes?.includes(dislike) || false}
-                      onChange={() => handleCheckboxChange('dislikes', dislike)}
+                      checked={watchedValues.disliked_foods?.includes(dislike) || false}
+                      onChange={() => handleCheckboxChange('disliked_foods', dislike)}
                       className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
                     />
                     <span className="text-sm">{dislike}</span>
@@ -200,20 +198,20 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
                   placeholder="Add custom dislike"
                   value={customDislike}
                   onChange={(e) => setCustomDislike(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomItem('dislikes', customDislike, setCustomDislike))}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomItem('disliked_foods', customDislike, setCustomDislike))}
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => addCustomItem('dislikes', customDislike, setCustomDislike)}
+                  onClick={() => addCustomItem('disliked_foods', customDislike, setCustomDislike)}
                 >
                   Add
                 </Button>
               </div>
 
-              {watchedValues.dislikes && watchedValues.dislikes.length > 0 && (
+              {watchedValues.disliked_foods && watchedValues.disliked_foods.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {watchedValues.dislikes.map((dislike) => (
+                  {watchedValues.disliked_foods.map((dislike) => (
                     <span
                       key={dislike}
                       className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800"
@@ -221,7 +219,7 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
                       {dislike}
                       <button
                         type="button"
-                        onClick={() => removeItem('dislikes', dislike)}
+                        onClick={() => removeItem('disliked_foods', dislike)}
                         className="ml-1 hover:text-yellow-600"
                       >
                         ×
@@ -251,45 +249,7 @@ export function DietPreferencesForm({ initialData, onSubmit, loading = false }: 
             </div>
           </div>
 
-          {/* Cooking & Budget Preferences */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="cooking_skill">Cooking Skill</Label>
-              <select
-                id="cooking_skill"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b800] focus:border-transparent"
-                {...register('cooking_skill')}
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="meal_prep_time">Max Prep Time (minutes)</Label>
-              <Input
-                id="meal_prep_time"
-                type="number"
-                placeholder="30"
-                {...register('meal_prep_time', { valueAsNumber: true })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="budget_preference">Budget Preference</Label>
-              <select
-                id="budget_preference"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b800] focus:border-transparent"
-                {...register('budget_preference')}
-              >
-                <option value="budget">Budget-Friendly</option>
-                <option value="moderate">Moderate</option>
-                <option value="premium">Premium</option>
-              </select>
-            </div>
-          </div>
+          {/* Cooking & Budget Preferences (omitted; not in current schema) */}
 
           <Button type="submit" loading={loading} className="w-full">
             Save Diet Preferences

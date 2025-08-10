@@ -54,11 +54,11 @@ export function MealDetailModal({ meal, isOpen, onClose, onEdit }: MealDetailMod
             </div>
 
             {/* Image */}
-            {meal.image_url && (
+            {(meal as any).image_url && (
               <div>
                 <h4 className="font-medium text-neutral-900 mb-2">Photo</h4>
                 <img 
-                  src={meal.image_url} 
+                  src={(meal as any).image_url} 
                   alt="Meal" 
                   className="w-full h-64 object-cover rounded-lg"
                 />

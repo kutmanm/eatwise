@@ -95,7 +95,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
   
   // For role restrictions, render the children with a warning banner if needed
-  if (user && allowedRoles && !allowedRoles.includes(user.role)) {
+  if (user && allowedRoles && user.role && !allowedRoles.includes(user.role as any)) {
     const isPremiumContent = allowedRoles.includes('premium');
     
     // If this is premium content and user is not premium, wrap children with upgrade banner

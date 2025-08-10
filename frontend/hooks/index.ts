@@ -1,6 +1,6 @@
 export * from './useAuth';
 export * from './useMeals';
-export * from './useProfile';
+// export * from './useProfile'; // no such file
 export * from './useAI';
 export * from './useWeightLogs';
 export * from './useUser';

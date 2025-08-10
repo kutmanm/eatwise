@@ -27,10 +27,10 @@ export function MealCard({ meal, onEdit, onDelete, onViewDetails }: MealCardProp
               </span>
             </div>
             
-            {meal.image_url && (
+            {(meal as any).image_url && (
               <div className="mb-3">
                 <img 
-                  src={meal.image_url} 
+                  src={(meal as any).image_url} 
                   alt="Meal" 
                   className="w-full h-32 object-cover rounded-lg"
                 />

@@ -95,9 +95,9 @@ export function UserSummaryCard({ onQuickAction }: UserSummaryCardProps) {
       moderately_active: { label: 'Moderate', color: 'bg-green-100 text-green-800' },
       very_active: { label: 'Very Active', color: 'bg-yellow-100 text-yellow-800' },
       extremely_active: { label: 'Athlete', color: 'bg-red-100 text-red-800' },
-    };
+    } as const;
     
-    return labels[profile.activity_level] || labels.sedentary;
+    return labels[profile.activity_level as keyof typeof labels] || labels.sedentary;
   };
 
   const activityBadge = getActivityBadge();

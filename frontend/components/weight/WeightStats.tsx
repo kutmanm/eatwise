@@ -21,7 +21,7 @@ export function WeightStats() {
     );
   }
 
-  if (!weightStats || weightStats.total_entries === 0) {
+  if (!weightStats || weightStats.entries_count === 0) {
     return (
       <Card>
         <CardHeader>
@@ -49,7 +49,7 @@ export function WeightStats() {
     }
   };
 
-  const trendInfo = getTrendLabel(weightStats.trend || 'insufficient_data');
+  const trendInfo = getTrendLabel('insufficient_data');
 
   return (
     <Card>
@@ -60,31 +60,34 @@ export function WeightStats() {
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             <div className="text-2xl font-bold text-gray-800">
-              {weightStats.total_entries}
+              {weightStats.entries_count}
             </div>
             <div className="text-xs text-gray-600">Total Entries</div>
           </div>
           
           <div className="text-center p-3 bg-blue-50 rounded-lg">
             <div className="text-2xl font-bold text-blue-600">
-              {weightStats.latest_weight?.toFixed(1) || 'N/A'}kg
+              {weightStats.current_weight?.toFixed?.(1) || 'N/A'}kg
             </div>
             <div className="text-xs text-blue-700">Latest Weight</div>
           </div>
         </div>
 
-        {weightStats.weight_change !== null && weightStats.weight_change !== 0 && (
+        {(() => {
+          const change = (weightStats.current_weight - weightStats.starting_weight);
+          return change !== 0;
+        })() && (
           <div className={`text-center p-3 rounded-lg ${
-            (weightStats.weight_change || 0) < 0 ? 'bg-green-50' : 'bg-red-50'
+            (weightStats.current_weight - weightStats.starting_weight) < 0 ? 'bg-green-50' : 'bg-red-50'
           }`}>
             <div className={`text-xl font-bold ${
-              (weightStats.weight_change || 0) < 0 ? 'text-green-600' : 'text-red-600'
+              (weightStats.current_weight - weightStats.starting_weight) < 0 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {(weightStats.weight_change || 0) > 0 ? '+' : ''}
-              {weightStats.weight_change?.toFixed(1)}kg
+              {(weightStats.current_weight - weightStats.starting_weight) > 0 ? '+' : ''}
+              {(weightStats.current_weight - weightStats.starting_weight).toFixed(1)}kg
             </div>
             <div className={`text-xs ${
-              (weightStats.weight_change || 0) < 0 ? 'text-green-700' : 'text-red-700'
+              (weightStats.current_weight - weightStats.starting_weight) < 0 ? 'text-green-700' : 'text-red-700'
             }`}>
               Total Change
             </div>

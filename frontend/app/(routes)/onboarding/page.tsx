@@ -8,7 +8,7 @@ import { usersApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { profileSchema, type ProfileFormData, type Gender, type ActivityLevel, type GoalType, type TimeFrame } from '@/types';
+import { profileSchema, type ProfileFormData } from '@/types';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -155,33 +155,33 @@ export default function OnboardingPage() {
     };
   };
 
-  const getGenderLabel = (gender: Gender) => {
-    const labels = { male: 'Male', female: 'Female', other: 'Other', prefer_not_to_say: 'Prefer not to say' };
-    return labels[gender];
+  const getGenderLabel = (gender: string) => {
+    const labels = { male: 'Male', female: 'Female', other: 'Other', prefer_not_to_say: 'Prefer not to say' } as const;
+    return labels[gender as keyof typeof labels] ?? '';
   };
 
-  const getActivityLabel = (level: ActivityLevel) => {
+  const getActivityLabel = (level: string) => {
     const labels = {
       sedentary: 'Sedentary (little/no exercise)',
       lightly_active: 'Lightly Active (1-3 days/week)',
       moderately_active: 'Moderately Active (3-5 days/week)',
       very_active: 'Very Active (6-7 days/week)',
       extremely_active: 'Extremely Active (2x/day or intense)',
-    };
-    return labels[level];
+    } as const;
+    return labels[level as keyof typeof labels] ?? '';
   };
 
-  const getGoalLabel = (goal: GoalType) => {
+  const getGoalLabel = (goal: string) => {
     const labels = {
       weight_loss: 'Weight Loss',
       muscle_gain: 'Muscle Gain',
       maintain: 'Maintain Weight',
       body_recomposition: 'Body Recomposition',
-    };
-    return labels[goal];
+    } as const;
+    return labels[goal as keyof typeof labels] ?? '';
   };
 
-  const getTimeFrameLabel = (timeFrame: TimeFrame) => {
+  const getTimeFrameLabel = (timeFrame: string) => {
     const labels = {
       '2_weeks': '2 Weeks',
       '1_month': '1 Month',
@@ -189,8 +189,8 @@ export default function OnboardingPage() {
       '6_months': '6 Months',
       '1_year': '1 Year',
       custom: 'Custom Date',
-    };
-    return labels[timeFrame];
+    } as const;
+    return labels[timeFrame as keyof typeof labels] ?? '';
   };
 
   return (
