@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+// import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { PhotoUpload } from '@/components/meal/PhotoUpload';
+// import { Button } from '@/components/ui/Button';
+// import { PhotoUpload } from '@/components/meal/PhotoUpload';
 import { TextEntry } from '@/components/meal/TextEntry';
 import { NutritionEditor } from '@/components/meal/NutritionEditor';
 import { CameraCapture } from '@/components/mobile/CameraCapture';
@@ -16,7 +17,7 @@ import { useMealFeedback } from '@/hooks/useAI';
 import type { MealFormData, PhotoAnalysisResponse, ChatLogResponse } from '@/types';
 import { GoImage } from 'react-icons/go';
 import { FaRegKeyboard } from 'react-icons/fa';
-import { IoArrowBack } from 'react-icons/io5';
+// import { IoArrowBack } from 'react-icons/io5';
 
 type EntryMethod = 'camera' | 'text';
 
@@ -26,7 +27,7 @@ function AddMealContent() {
   const [analysisResult, setAnalysisResult] = useState<(PhotoAnalysisResponse | ChatLogResponse) | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<Blob | null>(null);
+  // const [capturedImage, setCapturedImage] = useState<Blob | null>(null);
   const { feedback, getFeedback, loading: feedbackLoading } = useMealFeedback();
 
   const handleAnalysisComplete = (result: PhotoAnalysisResponse | ChatLogResponse) => {
@@ -56,19 +57,19 @@ function AddMealContent() {
           router.push('/dashboard');
         }, 2000);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to save meal. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => {
-    router.push('/dashboard');
-  };
+  // const handleCancel = () => {
+  //   router.push('/dashboard');
+  // };
 
   const handleCameraCapture = async (imageBlob: Blob) => {
-    setCapturedImage(imageBlob);
+    // setCapturedImage(imageBlob);
     
     try {
       setError('');
@@ -86,12 +87,12 @@ function AddMealContent() {
           } else if (response.data) {
             handleAnalysisComplete(response.data);
           }
-        } catch (err) {
+        } catch {
           setError('Failed to analyze image. Please try again.');
         }
       };
       reader.readAsDataURL(imageBlob);
-    } catch (err) {
+    } catch {
       setError('Failed to process image. Please try again.');
     }
   };
@@ -123,12 +124,12 @@ function AddMealContent() {
               } else if (response.data) {
                 handleAnalysisComplete(response.data);
               }
-            } catch (err) {
+            } catch {
               setError('Failed to analyze image. Please try again.');
             }
           };
           reader.readAsDataURL(file);
-        } catch (err) {
+        } catch {
           setError('Failed to process image. Please try again.');
         }
       }
@@ -142,7 +143,7 @@ function AddMealContent() {
 
   const handleBackToCamera = () => {
     setEntryMethod('camera');
-    setCapturedImage(null);
+    // setCapturedImage(null);
     setAnalysisResult(null);
     setError('');
   };

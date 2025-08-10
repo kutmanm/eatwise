@@ -23,7 +23,16 @@ export const symptomsApi = {
     end_date?: string;
     symptom_domain?: string;
   }) =>
-    apiClient.get<SymptomLog[]>('/api/symptoms/logs', { params }),
+    (() => {
+      const search = new URLSearchParams();
+      if (params?.skip != null) search.set('skip', String(params.skip));
+      if (params?.limit != null) search.set('limit', String(params.limit));
+      if (params?.start_date) search.set('start_date', params.start_date);
+      if (params?.end_date) search.set('end_date', params.end_date);
+      if (params?.symptom_domain) search.set('symptom_domain', params.symptom_domain);
+      const qs = search.toString();
+      return apiClient.get<SymptomLog[]>(`/api/symptoms/logs${qs ? `?${qs}` : ''}`);
+    })(),
 
   getSymptomLog: (id: number) =>
     apiClient.get<SymptomLog>(`/api/symptoms/logs/${id}`),
@@ -44,7 +53,15 @@ export const symptomsApi = {
     start_date?: string;
     end_date?: string;
   }) =>
-    apiClient.get<LifestyleLog[]>('/api/symptoms/lifestyle', { params }),
+    (() => {
+      const search = new URLSearchParams();
+      if (params?.skip != null) search.set('skip', String(params.skip));
+      if (params?.limit != null) search.set('limit', String(params.limit));
+      if (params?.start_date) search.set('start_date', params.start_date);
+      if (params?.end_date) search.set('end_date', params.end_date);
+      const qs = search.toString();
+      return apiClient.get<LifestyleLog[]>(`/api/symptoms/lifestyle${qs ? `?${qs}` : ''}`);
+    })(),
 
   getLifestyleLog: (id: number) =>
     apiClient.get<LifestyleLog>(`/api/symptoms/lifestyle/${id}`),
@@ -59,10 +76,10 @@ export const symptomsApi = {
   analyzeSymptomCorrelations: (data: SymptomAnalysisRequest) =>
     apiClient.post<SymptomCorrelationData>('/api/symptoms/analysis', data),
 
-  getSymptomSummary: (days?: number) =>
-    apiClient.get<SymptomSummary>('/api/symptoms/summary', { 
-      params: { days: days || 30 } 
-    }),
+  getSymptomSummary: (days?: number) => {
+    const d = days ?? 30;
+    return apiClient.get<SymptomSummary>(`/api/symptoms/summary?days=${d}`);
+  },
 
   // Reference Data
   getSymptomTypes: () =>

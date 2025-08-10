@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +16,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const { signUp, signInWithGoogle } = useAuthContext();
-  const router = useRouter();
+  // const router = useRouter();
 
   const {
     register,

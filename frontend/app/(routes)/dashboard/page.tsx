@@ -8,34 +8,35 @@ import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
 import { MealTimeline } from '@/components/dashboard/MealTimeline';
 import { DailyTipCard } from '@/components/dashboard/DailyTipCard';
 import { NutritionCircles } from '@/components/dashboard/NutritionCircles';
-import { StatsOverview } from '@/components/dashboard/StatsOverview';
+// import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { WeightEntryForm, WeightStats } from '@/components/weight';
 import { useTodaysProgress } from '@/hooks/useProgress';
 import { useTodaysMeals } from '@/hooks/useMeals';
-import { useUserStreak, useUserProfile, useUserGoals } from '@/hooks/useUser';
+import { useUserProfile } from '@/hooks/useUser';
+// import { useUserStreak, useUserGoals } from '@/hooks/useUser';
 import { useAuthContext } from '@/components/auth/AuthProvider';
 
 function DashboardContent() {
   const router = useRouter();
-  const { signOut } = useAuthContext();
+  // const { signOut } = useAuthContext();
   const { progress, loading: progressLoading } = useTodaysProgress();
   const { meals, loading: mealsLoading } = useTodaysMeals();
-  const { streak, loading: streakLoading } = useUserStreak();
+  // const { streak, loading: streakLoading } = useUserStreak();
   const { profile, loading: profileLoading } = useUserProfile();
-  const { goals, loading: goalsLoading } = useUserGoals();
+  // const { goals, loading: goalsLoading } = useUserGoals();
 
   const handleAddMeal = () => {
     router.push('/dashboard/add-meal');
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
+  // const handleSignOut = async () => {
+  //   await signOut();
+  //   router.push('/');
+  // };
 
-  if (progressLoading || mealsLoading || streakLoading || profileLoading) {
+  if (progressLoading || mealsLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900" />

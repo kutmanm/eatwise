@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
 export default function HomePage() {
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">

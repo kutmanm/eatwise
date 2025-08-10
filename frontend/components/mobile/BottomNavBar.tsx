@@ -1,23 +1,11 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-// Import specific icons with fallback
-let LuScanLine: any, AiFillHome: any, FaCalendarAlt: any, IoIosPie: any, RiRobot2Fill: any;
-
-try {
-  ({ LuScanLine } = require('react-icons/lu'));
-  ({ AiFillHome } = require('react-icons/ai'));
-  ({ FaCalendarAlt } = require('react-icons/fa'));
-  ({ IoIosPie } = require('react-icons/io'));
-  ({ RiRobot2Fill } = require('react-icons/ri'));
-} catch (e) {
-  // Fallback если react-icons не установлены
-  LuScanLine = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📷</span>;
-  AiFillHome = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>🏠</span>;
-  FaCalendarAlt = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📅</span>;
-  IoIosPie = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>📊</span>;
-  RiRobot2Fill = ({ size }: { size: number }) => <span style={{ fontSize: `${size}px` }}>🤖</span>;
-}
+import { LuScanLine } from 'react-icons/lu';
+import { AiFillHome } from 'react-icons/ai';
+import { FaCalendarAlt } from 'react-icons/fa';
+import { IoIosPie } from 'react-icons/io';
+import { RiRobot2Fill } from 'react-icons/ri';
 
 interface NavItem {
   path: string;
@@ -109,3 +97,5 @@ export function BottomNavBar() {
     </div>
   );
 }
+
+BottomNavBar.displayName = 'BottomNavBar';

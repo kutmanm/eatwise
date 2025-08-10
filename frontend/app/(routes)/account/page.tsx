@@ -19,8 +19,8 @@ export default function AccountPage() {
     cancelSubscription, 
     billingLoading, 
     cancelLoading,
-    isPremium,
-    isTrial
+    // isPremium,
+    // isTrial
   } = useSubscription();
 
   useEffect(() => {
